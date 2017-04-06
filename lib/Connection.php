@@ -32,7 +32,7 @@ class Connection
     private $_username = [];
 
     /**
-     * @username array of string This attribute is internal for save the connection passwords
+     * @password array of string This attribute is internal for save the connection passwords
      */
     private $_password = [];
 
@@ -60,13 +60,11 @@ class Connection
      * Initialize the object or return this object if have value set in attribute $_instance
      * @return Connection
      */
-    final public static function initialize()
-    {
-        if (!self::$_instance) {
-            self::$_instance = new Connection();
-        }
 
-        return self::$_instance;
+    public function __construct()
+    {
+        self::$_instance = $this;
+        return $this;
     }
 
     /**
@@ -100,8 +98,6 @@ class Connection
         $this->_username[$connectionName] = $username;
         $this->_password[$connectionName] = $password;
         $this->_driver[$connectionName] = $driver;
-
-        $this->setConnection($connectionName);
 
         return $this;
     }

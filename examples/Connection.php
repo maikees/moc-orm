@@ -9,97 +9,104 @@ include_once '../lib/autoload.php';
  *
  * 2. Set the namespace to connection
  *
- * 3. Initialize the connection using static method Connection::initialize()
- * @return Connection
+ * 3. Initialize the Connection Manager using static method ConnectionManager::initialize(closure(connection))
+ * @return ConnectionManager
  *
- * 4. Add the configurations using the method addConfig, accepts various configurations
+ * 4. Add the configurations using the method addConfig, into closure, accepts various configurations
  *      Arguments:
  *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
  *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
- * @return Connection
+ * @return $connectionManager
  *
- * 5. Set connection for active using the method setConnection
- *      - $connection->setConnection('connectionName');
- * @return Connection
+ * 5. Set connection for active using the method open
+ *      - $connectionManager->open('connectionName');
+ * @return $connectionManager
  *
- * 6. if needed change the connection using the method changeConnection
- *      - $connection->setConnection('connectionName');
- * @return Connection
+ * 6. if needed change the connection using the method change
+ *      - $connectionManager->change('connectionName');
+ * @return $connectionManager
  *
- * 7. Get current connection using the method getCurrentConnectionName
- *      - $connection->getCurrentConnectionName();
+ * 7. Get current connection using the method current()->getCurrentConnectionName
+ *      - $connectionManager->current()->getCurrentConnectionName();
  * @return String Connection name
  * 8. Get all previous settings, using method getConfig.
- *      - $connection->getConfig();
+ *      - $connectionManager->current()->getConfig();
  * @return array on connection string
  *
- * 9. Get last performed query using method getLastPerformedQuery()
+ * 9. Get last performed query using method current()->getLastPerformedQuery()
+ *      - $connectionManager->current()->getLastPerformedQuery();
  * @return array
  *
- * 10. Get all performed query using method getPerformedQuery()
+ * 10. Get all performed query using method current()->getPerformedQuery()
+ *      - $connectionManager->current()->getPerformedQuery();
  * @return array
  */
 
 /**
  * 1. Set the namespace to connection
  */
-use orm\connection\Connection;
+use orm\connection\ConnectionManager;
 
 try {
 
     /**
-     * 3. Initialize the connection using static method Connection::initialize()
-     * @return Connection
+     * 3. Initialize the connection using static method ConnectionManager::initialize()
+     * @param \Closure $connection
+     * @return \ConnectionManager
      */
-    $connection = Connection::initialize();
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        /**
+         * 4. Add the configurations using the method addConfig, accepts various configurations
+         *      Arguments:
+         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
+         *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
+         * @return Connection
+         */
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
 
-    /**
-     * 4. Add the configurations using the method addConfig, accepts various configurations
-     *      Arguments:
-     *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
-     *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
-     * @return Connection
-     */
-    $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-    $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+        return $connection;
+    });
 
     /**
      * 5. Set connection for active using the method setConnection
      *      - $connection->setConnection('connectionName');
      * @return Connection
      */
-    $connection->setConnection('postgres_local');
+    $connectionManager::open('postgres_local');
+    $connectionManager::open('local');
 
     /**
-     * 6. if needed change the connection using the method setConnection
-     *      - $connection->setConnection('connectionName');
+     * 6. if needed change the connection using the method change
+     *      -     $connectionManager::change('local');
+
      * @return Connection
      */
-    $connection->setConnection('local');
+    $connectionManager::change('local');
 
     /**
-     * 7. Get current connection using the method getCurrentConnection
-     *      - $connection->getCurrentConnectionName();
+     * 7. Get current connection using the method current()->getCurrentConnectionName();
+     *      - $connectionManager->current()->getCurrentConnectionName();
      * @return String Connection name
      */
-    $connection->getCurrentConnectionName();
+    $connectionManager->current()->getCurrentConnectionName();
 
     /**
-     * 8. Get all previous settings, using method getConfig.
-     *      - $connection->getConfig();
+     * 8. Get all previous settings, using method current()->getConfigs().
+     *      - $connectionManager->current()->getConfigs();
      * @return array on connection string
      */
-    $connection->getConfigs();
+    $connectionManager->current()->getConfigs();
 
     /**
-     * 9. Get last performed query using method getLastPerformedQuery()
+     * 9. Get last performed query using method current()->getLastPerformedQuery()
      */
-    $connection->getLastPerformedQuery();
+    $connectionManager->current()->getLastPerformedQuery();
 
     /**
-     * 10. Get all performed query using method getPerformedQuery()
+     * 10. Get all performed query using method current()->getPerformedQuery()
      */
-    $connection->getPerformedQuery();
+    $connectionManager->current()->getPerformedQuery();
 
 
 } catch (Exception $e) {

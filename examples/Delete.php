@@ -27,32 +27,28 @@ include_once 'UsageModel.php';
  *
  */
 
-use orm\connection\Connection;
+use orm\connection\ConnectionManager;
 use quickcooffe\usage\UsageModel;
 
 try {
     /**
-     * Initialize the connection using static method Connection::initialize()
-     * @return Connection
+     * Initialize the connection using static method ConnectionManager::initialize()
+     * @param \Closure $connection
+     * @return \ConnectionManager
      */
-    $connection = Connection::initialize();
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        /**
+         * Add the configurations using the method addConfig, accepts various configurations
+         *      Arguments:
+         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
+         *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
+         * @return Connection
+         */
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
 
-    /**
-     *  Add the configurations using the method addConfig, accepts various configurations
-     *      Arguments:
-     *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
-     *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
-     * @return Connection
-     */
-    $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-    $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-    /**
-     * Set connection for active using the method setConnection
-     *      - $connection->setConnection('connectionName');
-     * @return Connection
-     */
-    $connection->setConnection('postgres_local');
+        return $connection;
+    });
 
     /**
      *  4. For search your data on primary key use the static function find
@@ -60,7 +56,7 @@ try {
      *      @return Array with object if exists the data
      *      @return Null if not exists the data
      */
-    $usage = UsageModel::find(174);
+    $usage = UsageModel::find(247);
 
     /**
      *  4.1. Use method delete in your object

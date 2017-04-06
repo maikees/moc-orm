@@ -25,7 +25,7 @@ include_once 'UsageModel.php';
  *
  */
 
-use orm\connection\Connection;
+use orm\connection\ConnectionManager;
 use quickcooffe\usage\UsageModel;
 
 try {
@@ -34,17 +34,22 @@ try {
      * Initialize the connection using static method Connection::initialize()
      * @return Connection
      */
-    $connection = Connection::initialize();
 
-    /**
+
+     /**
      *  Add the configurations using the method addConfig, accepts various configurations
      *      Arguments:
      *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
      *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
      * @return Connection
      */
-//    $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-//    $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+        return $connection;
+    });
 
     /**
      * Set connection for active using the method setConnection
@@ -56,12 +61,38 @@ try {
     /**
      *  4. Instantiate the model
      */
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+        return $connection;
+    });
+
+//    $connectionManager->open('local');
+
     $usage = new UsageModel();
 
     /**
      * 5. Set values in attributes
      */
 
+    $usage->id2 = 10;
+    $usage->nome = 'Teste Save';
+
+    /**
+     * 6. Use the method 'save' of you model instantiated
+     * @return model instantiated if save success
+     * @return false if save not success
+     */
+    $result = $usage->save();
+    $connectionManager::open('local');
+    $connectionManager::change('local');
+
+    $usage = new UsageModel();
+
+    /**
+     * 5. Set values in attributes
+     */
     $usage->id2 = 10;
     $usage->nome = 'Teste Save';
 

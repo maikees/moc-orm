@@ -30,38 +30,33 @@ include_once 'UsageModel.php';
  *
  */
 
-use orm\connection\Connection;
+use orm\connection\ConnectionManager;
 use quickcooffe\usage\UsageModel;
 
 try {
-
     /**
-     * Initialize the connection using static method Connection::initialize()
-     * @return Connection
+     * Initialize the connection using static method ConnectionManager::initialize()
+     * @param \Closure $connection
+     * @return \ConnectionManager
      */
-    $connection = Connection::initialize();
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        /**
+         * Add the configurations using the method addConfig, accepts various configurations
+         *      Arguments:
+         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
+         *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
+         * @return Connection
+         */
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
 
-    /**
-     *  Add the configurations using the method addConfig, accepts various configurations
-     *      Arguments:
-     *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
-     *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
-     * @return Connection
-     */
-    $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-    $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-    /**
-     * Set connection for active using the method setConnection
-     *      - $connection->setConnection('connectionName');
-     * @return Connection
-     */
-    $connection->setConnection('postgres_local');
+        return $connection;
+    });
 
     /**
      *  4. Open transaction using method beginTransaction using $connection->beginTransaction()
      */
-    $connection->beginTransaction();
+    $connectionManager->current()->beginTransaction();
 
     $usage55 = UsageModel::create(['id2' => '55', 'nome' => 'Teste rollback 1']);
     $usage56 = UsageModel::create(['id2' => '56', 'nome' => 'Teste rollback 2']);
@@ -72,9 +67,9 @@ try {
      *      - Rollback Not send your data to database
      *          @method $connection->rollbackTransaction()
      */
-    $connection->rollbackTransaction();
+    $connectionManager->current()->rollbackTransaction();
 
-    $connection->beginTransaction();
+    $connectionManager->current()->beginTransaction();
 
     $usage58 = UsageModel::create(['id2' => '58', 'nome' => 'Teste commit 1']);
     $usage59 = UsageModel::create(['id2' => '59', 'nome' => 'Teste commit 2']);
@@ -85,7 +80,7 @@ try {
      *      - Commit send your data to database
      *          @method $connection->commitTransaction()
      */
-    $connection->commitTransaction();
+    $connectionManager->current()->commitTransaction();
 
 
 } catch (Exception $e) {

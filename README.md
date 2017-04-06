@@ -1,3 +1,4 @@
+#Connection
  * Usage connection example.
  *
  * 1. Extends your model to class Model, using namespace orm\model\Model;

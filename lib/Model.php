@@ -2,7 +2,7 @@
 
 namespace orm\model;
 
-use orm\connection\Connection;
+use orm\connection\ConnectionManager;
 use PHPUnit\Runner\Exception;
 
 abstract class Model extends Query
@@ -48,10 +48,13 @@ abstract class Model extends Query
      */
     public function __construct()
     {
-        $this->Connection = Connection::initialize();
-        self::$_instance = $this;
-        $this->cleanNewData();
-
+        try{
+            $this->Connection = ConnectionManager::initialize()->current();
+            self::$_instance = $this;
+            $this->cleanNewData();
+        }catch (Exception $e){
+            throw new \Exception($e->getMessage(), $e->getCode());
+        }
     }
 
     /**
@@ -206,14 +209,14 @@ abstract class Model extends Query
 
         $currentTable = static::$table_name;
 
-        $instance = self::$_instance;
+        self::instance();
 
+        $instance = self::$_instance;
         try{
             self::$_instance->verifyConnection();
         }catch (Exception $e){
             Throw new \Exception($e->getMessage());
         }
-
 
         $sql = "SELECT * FROM $currentTable ";
 
@@ -248,7 +251,7 @@ abstract class Model extends Query
 
         try{
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
+        }catch (\Exception $e){
             Throw new \Exception($e->getMessage());
         }
 
@@ -384,8 +387,8 @@ abstract class Model extends Query
 
         try{
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
-            Throw new \Exception($e->getMessage());
+        }catch (\Exception $e){
+            throw new \Exception($e->getMessage());
         }
 
         if (!is_string($colunm)) throw new \Exception("Invalid parameter type.");
