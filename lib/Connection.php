@@ -2,6 +2,7 @@
 
 namespace orm\connection;
 
+
 class Connection
 {
     /**
@@ -17,30 +18,15 @@ class Connection
     private $_connection;
 
     /**
-     * @connectionString array of string This attribute is internal for save the connection string
-     */
-    private $_connectionString = [];
-
-    /**
      * @currentConnectionName string of the current connection name
      */
-    private $_currentConnectionName;
+    private $_currentConnectionString;
 
-    /**
-     * @username array of string This attribute is internal for save the connection usernames
-     */
-    private $_username = [];
-
-    /**
-     * @password array of string This attribute is internal for save the connection passwords
-     */
-    private $_password = [];
-
-    /**
-     * List of drivers sets on connections
-     * @var $_driver
-     */
-    private $_driver = [];
+    private $connectionString;
+    private $driver;
+    private $username;
+    private $password;
+    private $charset;
 
     /**
      * This save all query orm use.
@@ -49,79 +35,43 @@ class Connection
     private $performed_query = [];
 
     /**
-     * Constant to define set accepted drivers.
-     */
-    const DRIVERS = [
-        "msyql",
-        "pgsql",
-    ];
-
-    /**
      * Initialize the object or return this object if have value set in attribute $_instance
      * @return Connection
      */
-
-    public function __construct()
+    public function __construct($config)
     {
+        $this->connectionString = $config['connectionString'];
+        $this->driver = $config['driver'];
+        $this->username = $config['username'];
+        $this->password = $config['password'];
+        $this->charset = $config['charset'];
+
         self::$_instance = $this;
         return $this;
     }
 
     /**
-     * Create configuration from connection
-     * @param string $driver The driver from connection
-     * @param string $username The username from connection
-     * @param string $password The password from connection
-     * @param string $host The host from connection
-     * @param string $database The database from connection
-     * @param string $connectionName The connection name from connection
-     * @param integer $port The port from connection
-     * @return $this This object for other iterators
-     * @throws \Exception case one or some elements on parameters are invalid
-     */
-    public function addConfig($driver = 'mysql', $username = "root", $password = null, $host = "localhost", $database = null, $connectionName = null, $port = null)
-    {
-
-        #Begin: Verify if all parameters send is valid.
-        if (!is_string($driver) and !array_search($driver, DRIVERS)) throw new \Exception("The driver $driver don't supported.");
-        if (!is_string($username)) throw new \Exception("Invalid username.");
-        if (!is_string($password)) throw new \Exception("Invalid password.");
-        if (!is_string($host)) throw new \Exception("Invalid host.");
-        if (!is_string($database)) throw new \Exception("Invalid database name.");
-        if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
-
-        $port = is_null($port) ? '' : (int)$port;
-        if (!is_null($port) && !is_int($port)) throw new \Exception("Invalid port format.");
-
-        #Constructor of the connection string
-        $this->_connectionString[$connectionName] = "$driver:host=$host;dbname=$database;port=$port;";
-        $this->_username[$connectionName] = $username;
-        $this->_password[$connectionName] = $password;
-        $this->_driver[$connectionName] = $driver;
-
-        return $this;
-    }
-
-    /**
-     * Set the current connection on connection name.
+     * Initialize the connection
      * @param string $connectionName name on connection
      * @return $this This object from other interator
      * @throws \Exception if the connect name haven't set;
      */
-    public function setConnection($connectionName)
+    public function setConnection()
     {
-        if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
-
-        if (array_key_exists($connectionName, $this->_connectionString)) {
-
-            $this->_currentConnectionName = $connectionName;
-        } else {
-            throw new \Exception("The connection name $connectionName is not set.");
-        }
+        $this->_currentConnectionString = $this->connectionString;
 
         try {
-            $this->connection();
-        } catch (Exception $e) {
+            $this->_connection = new \PDO(
+                $this->connectionString,
+                $this->username,
+                $this->password
+            );
+
+            $charsetQuery = "set names $this->charset";
+
+            $this->_connection->query($charsetQuery);
+            
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode());
         }
 
@@ -129,21 +79,12 @@ class Connection
     }
 
     /**
-     * Get all connection string
-     * @return array if have connection but not have this method return null
-     */
-    final public function getConfigs()
-    {
-        return $this->_connectionString;
-    }
-
-    /**
      * Get name on current connection
      * @return string name on current connection or null if don't have
      */
-    final public function getCurrentConnectionName()
+    final public function getCurrentConnectionString()
     {
-        return $this->_currentConnectionName;
+        return $this->_currentConnectionString;
     }
 
     /**
@@ -151,7 +92,7 @@ class Connection
      * @return $this
      * @throws \Exception
      */
-    public function connection()
+    public function connection($connectionString, $username, $password)
     {
         if (is_null($this->getCurrentConnectionName())) throw new \Exception('Conexão não setada.');
 
@@ -208,7 +149,7 @@ class Connection
      */
     public function getDriver()
     {
-        return $this->_driver;
+        return $this->driver;
     }
 
     /**
@@ -247,7 +188,8 @@ class Connection
      * @return $this
      */
     final public function changeSchema($schema = null){
-        if(!is_string($schema)) throw new \Exception('The parameter don\'t is an String.');
+        if(!is_string($schema)) throw new \InvalidArgumentException('The parameter don\'t is an String.');
+        if($this->driver == 'mysql') throw new \InvalidArgumentException('This driver not supported schemas.');
 
         $this->getConnection()->exec("SET search_path TO '$schema';");
         return $this;

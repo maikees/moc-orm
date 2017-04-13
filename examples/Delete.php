@@ -56,7 +56,7 @@ try {
      *      @return Array with object if exists the data
      *      @return Null if not exists the data
      */
-    $usage = UsageModel::find(247);
+    $usage = UsageModel::find(246);
 
     /**
      *  4.1. Use method delete in your object

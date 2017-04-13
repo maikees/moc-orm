@@ -52,7 +52,7 @@ try {
      *      @return The object if exists the data
      *      @return Null if not exists the data
      */
-    $usage = UsageModel::find(246);
+    $usage = UsageModel::find(251);
 
     if(!is_null($usage)){
         echo 'Id: '.$usage->id.'<br />';

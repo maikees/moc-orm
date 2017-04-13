@@ -122,6 +122,20 @@ abstract class Query{
     }
 
     /**
+     * This function is a mirror of 'LEFT JOIN' on database
+     * @param string $join
+     * @return $this
+     */
+    final public function custom($partialQuery)
+    {
+        if (!is_string($partialQuery)) throw new \Exception('Invalid parameter type.');
+
+        $this->_current_custom_query[] = $partialQuery;
+
+        return $this;
+    }
+
+    /**
      * This function is a mirror of 'Right JOIN' on database
      * @param string $join
      * @return $this

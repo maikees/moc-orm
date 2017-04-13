@@ -5,7 +5,7 @@ namespace orm\model;
 use orm\connection\ConnectionManager;
 use PHPUnit\Runner\Exception;
 
-abstract class Model extends Query
+abstract class Model extends Query  implements \JsonSerializable
 {
     /**
      * @var Save current instance
@@ -199,6 +199,14 @@ abstract class Model extends Query
     }
 
     /**
+     * JsonSerializable Interface.
+     */
+    public function jsonSerialize()
+    {
+        return $this->_data;
+    }
+
+    /**
      * Get all data on database needed table name in Model
      * @return array all data in format Object
      * @throws \Exception Don't set table name in model.
@@ -258,9 +266,8 @@ abstract class Model extends Query
         $repeat = substr(str_repeat(' ?, ', count($param)), 0, -2);
 
         $drivers = $instance->Connection->getDriver();
-        $connection_name = $instance->Connection->getCurrentConnectionName();
 
-        switch ($drivers[$connection_name]) {
+        switch ($drivers) {
             case 'mysql':
                 $sql = "call $currentTable ($repeat)";
                 break;
@@ -356,7 +363,7 @@ abstract class Model extends Query
         self::$_instance->_current_custom_query[] = 'SELECT * FROM ' . static::$table_name . ' ';
 
         switch ($parameters) {
-            case is_int($parameters):
+            case is_numeric($parameters):
                 if (!isset(static::$primary_key)) throw new \Exception("Invalid parameter type.");
 
                 self::$_instance->_current_custom_query_values[] = $parameters;
@@ -384,6 +391,8 @@ abstract class Model extends Query
     final public static function select($colunm = null)
     {
         self::instance();
+
+        self::$_instance->_data = [];
 
         try{
             self::$_instance->verifyConnection();
@@ -451,6 +460,13 @@ abstract class Model extends Query
      */
     protected function query($query, $param = [])
     {
+        $this->_data = [];
+
+        $select = trim ($query);
+        $select = strtolower($select);
+
+        $match = preg_match('/select/', $select);
+
         try{
             $this->verifyConnection();
         }catch (Exception $e){
@@ -469,9 +485,14 @@ abstract class Model extends Query
             return $this;
         }
 
-        $this->_data = $objetos = $consulta->fetchAll(\PDO::FETCH_CLASS, get_class($this));
-
         $end = microtime(true);
+
+        if($match){
+            $this->_data = $objetos = $consulta->fetchAll(\PDO::FETCH_CLASS, get_called_class());
+        }
+        else{
+            $objetos = $consulta->rowCount();
+        }
 
         $this->Connection->setPerformedQuery($query, round(($end - $start), 5));
 
@@ -490,26 +511,18 @@ abstract class Model extends Query
         try{
             self::$_instance->verifyConnection();
         }catch (Exception $e){
-            Throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
 
-        if (!is_array($param)) throw new \Exception('Tipo de parâmetro inválido.');
+        if (!is_array($param)) throw new \Exception('Invalid parameter type.');
 
-        $start = microtime(true);
+        self::$_instance->_current_custom_query_values = $param;
 
-        $consulta = self::$_instance->Connection->getConnection()->prepare($query);
-        $consulta->execute($param);
+        $objetos = self::$_instance->query($query, self::$_instance->_current_custom_query_values);
 
-        if (!$consulta) {
-            self::$_instance->_data = false;
-            return self::$_instance;
-        }
+        self::$_instance->_current_custom_query_values = [];
 
-        self::$_instance->_data = $objetos = $consulta->fetchAll(\PDO::FETCH_CLASS, get_class(self::$_instance));
-
-        $end = microtime(true);
-
-        self::$_instance->Connection->setPerformedQuery($query, round(($end - $start), 5));
+        self::$_instance->cleanNewData();
 
         return $objetos;
     }
@@ -585,6 +598,10 @@ abstract class Model extends Query
         return $this;
     }
 
+    protected function getData(){
+        return $this->_data;
+    }
+
     /**
      * Auxiliar method for current instance is set
      * @return current class
@@ -592,12 +609,14 @@ abstract class Model extends Query
     final private static function instance(){
         $calledClass = get_called_class();
 
-        if (!self::$_instance) self::$_instance = new $calledClass();
+        self::$_instance = new $calledClass();
+
+        self::$_instance->Connection = ConnectionManager::initialize()->current();
 
         return self::$_instance;
     }
 
     final private function verifyConnection(){
-        if(is_null($this->Connection->getCurrentConnectionName())) throw new \Exception('Not set connection.');
+        if(is_null($this->Connection->getCurrentConnectionString())) throw new \Exception('Not set connection.');
     }
 }

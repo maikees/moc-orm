@@ -5,7 +5,7 @@ namespace orm\connection;
 class ConnectionManager
 {
     /**
-     * @Connection object is a singleton of Connection
+     * @Connection object is a of Connection
      */
     private $Connection;
 
@@ -30,16 +30,25 @@ class ConnectionManager
     private $_currentConnectionName;
 
     /**
+     * @Config This is a singleton object for save all configs
+     */
+    private $Config;
+
+    /**
      * Initialize the object or return this object if have value set in attribute $_instance
      * @param \Closure $connection
      * @return ConnectionManager
      */
-    public static function initialize($connection = null)
+    public static function initialize($config = null)
     {
-
         if (!self::$_instance) self::$_instance = new ConnectionManager();
 
-        if (is_callable($connection)) self::$_instance->Connection = $connection(new Connection);
+        if (is_callable($config)) {
+
+            $config($_config = new Config());
+
+            self::$_instance->Config = $_config;
+        }
 
         return self::$_instance;
     }
@@ -52,16 +61,23 @@ class ConnectionManager
      */
     public static function open($connectionName)
     {
+        $instance = self::$_instance;
+
         if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
-        if (!self::$_instance->hasConnection($connectionName)) throw new \Exception("The connection name $connectionName is not set.");
-        if (self::$_instance->hasOpen($connectionName)) throw new \Exception('This connection is actived.');
+        if (!$instance->hasConnection($connectionName)) throw new \Exception("The connection name $connectionName is not set.");
+        if ($instance->hasOpen($connectionName)) throw new \Exception('This connection is actived.');
 
-        self::$_instance->_currentConnectionName = $connectionName;
-        self::$_instance->connections[$connectionName] = self::$_instance->Connection->setConnection($connectionName);
+        $instance->_currentConnectionName = $connectionName;
 
-        self::$_instance->currentConnection = self::$_instance->connections[$connectionName];
+        $configs = $instance->Config->getConnection($connectionName);
 
-        return self::$_instance;
+        $instance->Connection = new Connection($configs);
+
+        $instance->connections[$connectionName] = $instance->Connection->setConnection();
+
+        $instance->currentConnection = $instance->connections[$connectionName];
+
+        return $instance;
     }
 
     /**
@@ -72,12 +88,16 @@ class ConnectionManager
      */
     public function current()
     {
-        if(empty($this->currentConnection)){
-            $configs = $this->Connection->getConfigs();
+        if (empty($this->currentConnection)) {
+            $configs = $this->Config->getConfigs();
 
-            if(count($configs) == 0) throw new \Exception('Not have connection');
+            if (count($configs) == 0) throw new \Exception('Not have connection');
 
-            $name = @end(array_keys($configs));
+            $default = $this->Config->getDefault();
+
+            $name = is_null($default) ?
+                @end(array_keys($configs)) :
+                $this->Config->getDefault();
 
             self::open($name);
         }
@@ -93,17 +113,34 @@ class ConnectionManager
      * @throws \Exception if connection name isn't set
      * @throws \Exception if connection not actived
      */
-    public static function change($connectionName)
+    public static function change($connectionName, $open = false)
     {
+        $instance = self::initialize();
+
         if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
-        if (!self::$_instance->hasConnection($connectionName)) throw new \Exception("The connection name $connectionName is not set.");
-        if (!self::$_instance->hasOpen($connectionName)) throw new \Exception('This connection isn\'t actived.');
 
-        self::$_instance->_currentConnectionName = $connectionName;
+        if (!$instance->hasConnection($connectionName)) throw new \Exception("The connection name $connectionName is not set.");
 
-        self::$_instance->currentConnection = self::$_instance->connections[$connectionName];
+        if (!$instance->hasOpen($connectionName)) {
+            if ($open) {
+                try {
+                    self::open($connectionName);
+                } catch (\Exception $e) {
+                    throw $e;
+                }
+            } else {
 
-        return self::$_instance;
+                throw new \Exception("This connection isn't actived.");
+            }
+        }
+
+        $instance->_currentConnectionName = $connectionName;
+
+        $instance->currentConnection = $instance->connections[$connectionName];
+
+        $instance->Connection = $instance->connections[$connectionName];
+
+        return $instance;
     }
 
     /**
@@ -116,6 +153,16 @@ class ConnectionManager
         if (!$this->hasInstance()) throw new \Exception('This instance isnt\'t initialized');
 
         return $this->connections;
+    }
+
+
+    /**
+     * Get all connection string
+     * @return array if have connection but not have this method return null
+     */
+    final public function getConfigs()
+    {
+        return $this->Config->getConfigs();
     }
 
     /**
@@ -148,7 +195,7 @@ class ConnectionManager
      */
     private function hasConnection($connectionName)
     {
-        if (array_key_exists($connectionName, $this->Connection->getConfigs())) {
+        if (array_key_exists($connectionName, $this->Config->getConfigs())) {
             return true;
         } else {
             return false;

@@ -42,7 +42,7 @@ try {
      * @param \Closure $connection
      * @return \ConnectionManager
      */
-    $connectionManager = ConnectionManager::initialize(function ($connection) {
+    $connectionManager = ConnectionManager::initialize(function ($config) {
         /**
          * Add the configurations using the method addConfig, accepts various configurations
          *      Arguments:
@@ -50,10 +50,8 @@ try {
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-        return $connection;
+        $config->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'postgres_local', 3306);
+        $config->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'local', 5432);
     });
 
     /**
@@ -74,17 +72,24 @@ try {
      *          Execute the query
      */
     $usage = UsageModel::select('*')
-                    ->where('id', 192)
-                    ->or('nome', 'Teste Save')
-                    ->and('id', 10)
                     ->orderBy('nome', 'DESC')
                     ->done();
 
+    $usage2 = UsageModel::select('*')
+        ->orderBy('nome', 'DESC')
+        ->done();
 
+    echo "<pre>";
+    var_dump($usage);
+    echo "</pre>";
+
+    echo "<pre>";
+    var_dump($usage2);
+    echo "</pre>";
     /**
      * 5. Joins example
      */
-    $result =   UsageModel::select('chave_composta.id as chave_id,
+   /* $result =   UsageModel::select('chave_composta.id as chave_id,
                                 chave_composta.id2 as chave_id2,
                                 chave_composta.nome as chave_nome,
                                 tb_usuarios.id as usuario_id,
@@ -92,11 +97,11 @@ try {
         ->leftJoin('tb_usuarios ON tb_usuarios.id = chave_composta.id2')
         ->orderBy('chave_composta.nome', 'DESC')
         ->done();
-    if(count($usage) > 0){
-        var_dump($usage);
+    if(count($result) > 0){
+        var_dump($result);
     }else{
         echo 'Haven\'t data for this Model.';
-    }
+    }*/
 
 } catch (Exception $e) {
     /**

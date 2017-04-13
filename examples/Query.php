@@ -47,8 +47,6 @@ try {
          */
         $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-        return $connection;
     });
 
     /**
@@ -58,8 +56,14 @@ try {
      *      @return Array haven't data
      */
     $useSql = UsageModel::sql('SELECT * FROM tb_usuarios');
+    echo '<pre>';
     var_dump($useSql);
+    echo '</pre>';
 
+    $useSql = UsageModel::sql('SELECT * FROM tb_usuarios');
+    echo '<pre>';
+    var_dump($useSql);
+    echo '</pre>';
     /**
      *  5. For get all data using not static method query in model, but this needed the method is instantiated in model
      *      @var query

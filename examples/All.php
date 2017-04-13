@@ -39,10 +39,8 @@ try {
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-        return $connection;
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
     });
 
     /**
@@ -50,10 +48,22 @@ try {
      *      @return Array with object if exists the data
      *      @return Array haven't data
      */
+  /*  echo "<pre>";
     $usage = UsageModel::all();
+    var_dump($usage);
+    echo "</pre>";*/
+
+
+
+    ConnectionManager::change('postgres_local', true);
+    echo "<pre>";
+    $usage2 = UsageModel::all();
+    var_dump(toList($usage2[0]));
+    echo "</pre>";
+
 
     if(count($usage) > 0){
-        var_dump($usage);
+//        var_dump($usage);
     }else{
         echo 'Haven\'t data for this Model.';
     }

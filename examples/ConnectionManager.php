@@ -5,19 +5,14 @@ use orm\connection\ConnectionManager;
 
 try {
 
+    $connectionManager = ConnectionManager::initialize(function ($config) {
+        $config->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $config->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'teste', 3306);
 
-    $connectionManager = ConnectionManager::inicialize(function ($connection) {
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'teste', 3306);
-
-        return $connection;
+        $config->setDefault('local');
     });
 
     $connectionManager->open('local');
-    var_dump($connectionManager->current());
-
-
-
 }catch (Exception $e){
     echo $e->getMessage();
 }
