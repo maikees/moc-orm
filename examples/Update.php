@@ -47,10 +47,9 @@ try {
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
 
-        return $connection;
     });
 
     /**
@@ -59,12 +58,12 @@ try {
      *      @return Array with object if exists the data
      *      @return Null if not exists the data
      */
-    $usage = UsageModel::find(251);
+    $usage = UsageModel::find(61);
 
     /**
      *  4.1. Modify the attributes your needed change
      */
-    $usage->nome = 'Edit your data from ORM.';
+    $usage->nome = 'Edit your data 3s from ORM.';
 
     /**
      *  4.2. Use method save in your object

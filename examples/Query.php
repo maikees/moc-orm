@@ -45,7 +45,7 @@ try {
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
     });
 
@@ -55,15 +55,16 @@ try {
      *      @return Array with object if exists the data
      *      @return Array haven't data
      */
-    $useSql = UsageModel::sql('SELECT * FROM tb_usuarios');
+    $useSql = UsageModel::sql('INSERT INTO chave_composta (id2)');
     echo '<pre>';
     var_dump($useSql);
     echo '</pre>';
 
-    $useSql = UsageModel::sql('SELECT * FROM tb_usuarios');
+    $useSql = UsageModel::sql('SELECT * FROM chave_composta where nome = :nome', [':nome' => 'Teste create']);
     echo '<pre>';
     var_dump($useSql);
     echo '</pre>';
+
     /**
      *  5. For get all data using not static method query in model, but this needed the method is instantiated in model
      *      @var query
@@ -72,13 +73,10 @@ try {
      */
     $usage = new UsageModel();
     $useQuery = $usage->useQuery();
+    echo '<pre>';
     var_dump($useQuery);
+    echo '</pre>';
 
-    if(count($usage) > 0){
-        var_dump($usage);
-    }else{
-        echo 'Haven\'t data for this Model.';
-    }
 
 } catch (Exception $e) {
     /**

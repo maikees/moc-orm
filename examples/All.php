@@ -57,13 +57,10 @@ try {
 
     ConnectionManager::change('postgres_local', true);
     echo "<pre>";
-    $usage2 = UsageModel::all();
-    var_dump(toList($usage2[0]));
-    echo "</pre>";
-
+    $usage = UsageModel::all();
 
     if(count($usage) > 0){
-//        var_dump($usage);
+        var_dump($usage);
     }else{
         echo 'Haven\'t data for this Model.';
     }

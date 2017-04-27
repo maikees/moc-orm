@@ -3,9 +3,70 @@
 namespace QuickCoffee;
 
 /**
-* Model
-*/
-abstract class Model extends \QuickCoffee\Database\ORM\Model
+ * Model
+ */
+abstract class Model extends orm\model\Model implements \ArrayAccess
 {
+    /**
+     * Gets model data.
+     *
+     * @return array
+     */
+    public function toArray()
+    {
+        return $this->getData();
+    }
 
+    /**
+     * Gets model data through static method.
+     *
+     * @param  mixed $data
+     * @return array
+     */
+    public static function toList($data)
+    {
+        if(!is_array($data)) throw new \Exception('It isn\'t a array of model');
+        if(!count($data)) throw new \Exception('It haven\'t data');
+        if (!($data[0] instanceof parent)) throw new \Exception(" It's not a model.");
+
+        $data = array_map(function ($object) { return $object->toArray(); }, $data);
+
+        return $data;
+    }
+
+    /**
+     * ArrayAccess Interface.
+     */
+
+    public function offsetExists($offset)
+    {
+        $data = $this->getData();
+
+        return isset($data[$offset]);
+    }
+
+    public function offsetGet($offset)
+    {
+        $data = $this->getData();
+
+        return isset($data[$offset]) ? $data[$offset] : null;
+    }
+
+    public function offsetSet($offset, $value)
+    {
+        $data = $this->getData();
+
+        if (is_null($offset)) {
+            $data[] = $value;
+        } else {
+            $data[$offset] = $value;
+        }
+    }
+
+    public function offsetUnset($offset)
+    {
+        $data = $this->getData();
+
+        unset($this->data[$offset]);
+    }
 }

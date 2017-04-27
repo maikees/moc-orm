@@ -5,7 +5,7 @@ namespace orm\model;
 use orm\connection\ConnectionManager;
 use PHPUnit\Runner\Exception;
 
-abstract class Model extends Query  implements \JsonSerializable
+abstract class Model extends Query implements \JsonSerializable
 {
     /**
      * @var Save current instance
@@ -42,19 +42,39 @@ abstract class Model extends Query  implements \JsonSerializable
      */
     protected $_current_custom_query_values = [];
 
+    public $errors;
+
     /**
      * Model constructor.
      * set connection in var and set this instance in var for interator
      */
-    public function __construct()
+    public function __construct($object = null)
     {
-        try{
+        try {
             $this->Connection = ConnectionManager::initialize()->current();
             self::$_instance = $this;
+
             $this->cleanNewData();
-        }catch (Exception $e){
-            throw new \Exception($e->getMessage(), $e->getCode());
+
+            if (!is_null($object)) {
+                if (!is_array($object)) throw new \InvalidArgumentException('Accept only array from object');
+
+                $this->_data = $object;
+                $this->_newData = $object;
+            }
+        } catch (Exception $e) {
+            throw $e;
         }
+    }
+
+    /**
+     * Using if call isset on attributes
+     * @param $name
+     * @return bool
+     */
+    public function __isset($name)
+    {
+        return key_exists($name, $this->_data);
     }
 
     /**
@@ -64,6 +84,10 @@ abstract class Model extends Query  implements \JsonSerializable
      */
     public function __get($name)
     {
+        if(strtolower($name) == 'errors') return Error::instance();
+
+        if (!key_exists($name, $this->_data)) throw new \Exception("The attribute $name not found.");
+
         return $this->_data[$name];
     }
 
@@ -94,26 +118,29 @@ abstract class Model extends Query  implements \JsonSerializable
      */
     public function save()
     {
-        try{
+        try {
             $this->verifyConnection();
-        }catch (Exception $e){
-            Throw new \Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw $e;
         }
 
         $update = false;
 
         $key = static::$primary_key;
+        $_tableName = static::$table_name;
 
         $repeat = substr(str_repeat(' ?, ', count($this->_newData)), 0, -2);
 
         /**
          * Edit case have primary key value
          */
-        if (!empty($this->_data[static::$primary_key])) {
+        if (!empty($this->_data[$key])) {
+            $sql = 'UPDATE ' . $_tableName . ' SET ';
 
-            $sql = 'UPDATE ' . static::$table_name . ' SET ';
-
-            if (count($this->_newData) <= 0) throw new \Exception('Don\'t have alter data.');
+            if (count($this->_newData) <= 0){
+                Error::create('Don\'t have alter data.', 1,'InvalidArgumentException');
+                return false;
+            }
 
             $sql .= implode(" = ?, ", array_keys($this->_newData)) . ' = ?';
             $sql .= " WHERE $key = ? ";
@@ -125,40 +152,37 @@ abstract class Model extends Query  implements \JsonSerializable
             /**
              * Insert case don't have primary key
              */
-            $sql = 'INSERT INTO ' . static::$table_name;
+            $sql = 'INSERT INTO ' . $_tableName;
             $sql .= ' (' . implode(', ', array_keys($this->_data)) . ') ';
             $sql .= " VALUES ";
             $sql .= " ($repeat); ";
         }
 
-        $instance = self::$_instance;
-
         if (is_callable($this->triggerBefore)) ($this->triggerBefore)();
 
         $start = microtime(true);
-        $insert = $instance->Connection->getConnection()->prepare($sql);
+        $insert = $this->Connection->getConnection()->prepare($sql);
 
         $insert->execute(array_values($this->_newData));
         $end = microtime(true);
 
-        $instance->Connection->setPerformedQuery($insert->queryString, round(($end - $start), 5));
+        $this->Connection->setPerformedQuery($insert->queryString, round(($end - $start), 5));
 
         if (is_callable($this->triggerAfter)) ($this->triggerAfter)();
 
         if ($update) {
-            if($insert->rowCount() == 0){
-                throw new \Exception($insert->errorInfo()[2], $insert->errorInfo()[1]);
-            }
+            if ($insert->errorInfo()[0] != 00000) throw new \Exception($insert->errorInfo()[2], $insert->errorInfo()[1]);
+
             return true;
         }
 
-        $instance->_data[static::$primary_key] = $instance->Connection->getConnection()->lastInsertId();
+        $this->_data[$key] = $this->Connection->getConnection()->lastInsertId();
 
-        if($insert->rowCount() == 0){
+        if ($insert->rowCount() == 0) {
             throw new \Exception($insert->errorInfo()[2], $insert->errorInfo()[1]);
         }
 
-        return $instance;
+        return true;
     }
 
     /**
@@ -167,14 +191,14 @@ abstract class Model extends Query  implements \JsonSerializable
      */
     public function delete()
     {
-        try{
+        try {
             $this->verifyConnection();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
-        if (!isset(static::$primary_key)) throw new Exception('Primary key don\'t set');
-        if (!is_int($this->{static::$primary_key})) throw new Exception('Primary key value don\'t is valid');
+        if (!isset(static::$primary_key)) throw new \Exception('Primary key don\'t set');
+        if (!is_numeric($this->{static::$primary_key})) throw new \Exception('Primary key value don\'t is valid');
 
         $sql = ' DELETE FROM ' . static::$table_name;
         $sql .= ' WHERE ' . static::$primary_key . ' = ? ';
@@ -220,9 +244,9 @@ abstract class Model extends Query  implements \JsonSerializable
         self::instance();
 
         $instance = self::$_instance;
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
@@ -257,9 +281,9 @@ abstract class Model extends Query  implements \JsonSerializable
 
         $instance = self::$_instance;
 
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
@@ -313,9 +337,9 @@ abstract class Model extends Query  implements \JsonSerializable
 
         $instance = self::$_instance;
 
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
@@ -352,13 +376,13 @@ abstract class Model extends Query  implements \JsonSerializable
     {
         self::instance();
 
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
-            Throw new \Exception($e->getMessage());
+        } catch (Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
-        if (!is_array($parameters) and !is_int($parameters)) throw new \Exception("Invalid parameter type.");
+        if (!is_array($parameters) and !is_numeric($parameters)) throw new \Exception('Invalid parameter type on model '.get_called_class().'.');
 
         self::$_instance->_current_custom_query[] = 'SELECT * FROM ' . static::$table_name . ' ';
 
@@ -388,15 +412,15 @@ abstract class Model extends Query  implements \JsonSerializable
      * @return Model|Save A model if success and false if don't have success
      * @throws \Exception If colunm isn't String
      */
-    final public static function select($colunm = null)
+    final public static function select($colunm = '*')
     {
         self::instance();
 
         self::$_instance->_data = [];
 
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (\Exception $e){
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
 
@@ -462,15 +486,15 @@ abstract class Model extends Query  implements \JsonSerializable
     {
         $this->_data = [];
 
-        $select = trim ($query);
+        $select = trim($query);
         $select = strtolower($select);
 
-        $match = preg_match('/select/', $select);
+        $match = preg_match('/^select|return/', $select);
 
-        try{
+        try {
             $this->verifyConnection();
-        }catch (Exception $e){
-            Throw new \Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
         if (!is_array($param)) throw new \Exception('Tipo de parâmetro inválido.');
@@ -478,6 +502,7 @@ abstract class Model extends Query  implements \JsonSerializable
         $start = microtime(true);
 
         $consulta = $this->Connection->getConnection()->prepare($query);
+
         $consulta->execute($param);
 
         if (!$consulta) {
@@ -487,10 +512,9 @@ abstract class Model extends Query  implements \JsonSerializable
 
         $end = microtime(true);
 
-        if($match){
+        if ($match) {
             $this->_data = $objetos = $consulta->fetchAll(\PDO::FETCH_CLASS, get_called_class());
-        }
-        else{
+        } else {
             $objetos = $consulta->rowCount();
         }
 
@@ -508,9 +532,9 @@ abstract class Model extends Query  implements \JsonSerializable
     {
         self::instance();
 
-        try{
+        try {
             self::$_instance->verifyConnection();
-        }catch (Exception $e){
+        } catch (Exception $e) {
             throw new \Exception($e->getMessage());
         }
 
@@ -598,7 +622,8 @@ abstract class Model extends Query  implements \JsonSerializable
         return $this;
     }
 
-    protected function getData(){
+    protected function getData()
+    {
         return $this->_data;
     }
 
@@ -606,7 +631,8 @@ abstract class Model extends Query  implements \JsonSerializable
      * Auxiliar method for current instance is set
      * @return current class
      */
-    final private static function instance(){
+    final private static function instance()
+    {
         $calledClass = get_called_class();
 
         self::$_instance = new $calledClass();
@@ -616,7 +642,8 @@ abstract class Model extends Query  implements \JsonSerializable
         return self::$_instance;
     }
 
-    final private function verifyConnection(){
-        if(is_null($this->Connection->getCurrentConnectionString())) throw new \Exception('Not set connection.');
+    final private function verifyConnection()
+    {
+        if (is_null($this->Connection->getCurrentConnectionString())) throw new \Exception('Not set connection.');
     }
 }

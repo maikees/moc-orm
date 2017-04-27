@@ -50,8 +50,8 @@ try {
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $config->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'postgres_local', 3306);
         $config->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'local', 5432);
+        $config->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'postgres_local', 3306);
     });
 
     /**
@@ -71,21 +71,22 @@ try {
      *      @function done
      *          Execute the query
      */
-    $usage = UsageModel::select('*')
+   /* $usage = UsageModel::select('*')
                     ->orderBy('nome', 'DESC')
-                    ->done();
+                    ->done();*/
 
-    $usage2 = UsageModel::select('*')
+/*    $usage2 = UsageModel::select('*')
         ->orderBy('nome', 'DESC')
-        ->done();
-
+        ->done();*/
+    $usage = UsageModel::select()->orderBy('nome', 'ASC')->done();
+    $usage = UsageModel::select()->custom(' ORDER BY nome ASC ')->done();;
     echo "<pre>";
     var_dump($usage);
     echo "</pre>";
-
+/*
     echo "<pre>";
     var_dump($usage2);
-    echo "</pre>";
+    echo "</pre>";*/
     /**
      * 5. Joins example
      */
