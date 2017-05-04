@@ -1,8 +1,9 @@
 <?php
 
-namespace orm\model;
+namespace QuickCoffee\Database\ORM;
 
-abstract class Query{
+abstract class Query
+{
     /**
      * @var array Save the current query for search on database
      */
@@ -22,8 +23,9 @@ abstract class Query{
      * This function is a closed on 'SELECT' and execute all parameter
      * @return $objects Return all data on parameters before sending
      */
-    public function done()
+    final public function done()
     {
+        $this->_data = [];
         $query = $this->queryBuilder();
 
         $objetos = $this->query($query, $this->_current_custom_query_values);
@@ -115,9 +117,12 @@ abstract class Query{
      * @param string $join
      * @return $this
      */
-    final public function leftJoin($join = '')
+    final public function custom($partialQuery)
     {
-        $this->_joins[] = ' LEFT JOIN ' . $join;
+        if (!is_string($partialQuery)) throw new \Exception('Invalid parameter type.');
+
+        $this->_current_custom_query[] = $partialQuery;
+
         return $this;
     }
 
@@ -126,12 +131,9 @@ abstract class Query{
      * @param string $join
      * @return $this
      */
-    final public function custom($partialQuery)
+    final public function leftJoin($join = '')
     {
-        if (!is_string($partialQuery)) throw new \Exception('Invalid parameter type.');
-
-        $this->_current_custom_query[] = $partialQuery;
-
+        $this->_joins[] = ' LEFT JOIN ' . $join;
         return $this;
     }
 

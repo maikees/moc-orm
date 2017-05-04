@@ -47,6 +47,8 @@ try {
     $connectionManager = ConnectionManager::initialize(function ($connection) {
         $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+        return $connection;
     });
 
     /**
@@ -59,38 +61,56 @@ try {
     /**
      *  4. Instantiate the model
      */
+    $connectionManager = ConnectionManager::initialize(function ($connection) {
+        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
+        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+        return $connection;
+    });
 
 //    $connectionManager->open('local');
 
-    $usage = new UsageModel(['id2' => 50, 'nome' => 'Teste Save array']);
-    $usage->save();
+    $usage = new UsageModel();
 
-    var_dump($usage->id);
-    die();
     /**
      * 5. Set values in attributes
      */
 
-    $result = $usage->save();
-
-    $usage = new UsageModel();
     $usage->id2 = 10;
     $usage->nome = 'Teste Save';
+//    $usage->nome23 = 'Teste Save2';
+    $result = $usage->save();
+    var_dump($result);
+    /**
+     * 6. Use the method 'save' of you model instantiated
+     * @return model instantiated if save success
+     * @return false if save not success
+     */
+   /* $result = $usage->save();
+    $connectionManager::open('local');
+    $connectionManager::change('local');
+
+    $usage = new UsageModel();*/
+
+    /**
+     * 5. Set values in attributes
+     */
+   /* $usage->id2 = 10;
+    $usage->nome = 'Teste Save';*/
 
     /**
      * 6. Use the method 'save' of you model instantiated
      * @return model instantiated if save success
      * @return false if save not success
      */
-    $result = $usage->save();
-
+    /*$result = $usage->save();
 
     if(is_object($result)){
         echo 'Id: '.$usage->id.'<br />';
         echo 'Nome: '.$usage->nome.'<br />';
     }else{
         echo 'This data haven\'t save.';
-    }
+    }*/
 } catch (Exception $e) {
     /**
      * All Exceptions

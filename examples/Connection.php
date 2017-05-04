@@ -1,7 +1,7 @@
 <?php
 
 include_once '../lib/autoload.php';
-include('UsageModel.php');
+
 /**
  * Usage connection example.
  *
@@ -64,6 +64,8 @@ try {
          */
         $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
         $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+
+        return $connection;
     });
 
     /**
@@ -87,14 +89,14 @@ try {
      *      - $connectionManager->current()->getCurrentConnectionName();
      * @return String Connection name
      */
-    $connectionManager->current()->getCurrentConnectionString();
+    $connectionManager->current()->getCurrentConnectionName();
 
     /**
      * 8. Get all previous settings, using method current()->getConfigs().
      *      - $connectionManager->current()->getConfigs();
      * @return array on connection string
      */
-    $connectionManager->getConfigs();
+    $connectionManager->current()->getConfigs();
 
     /**
      * 9. Get last performed query using method current()->getLastPerformedQuery()
@@ -106,7 +108,6 @@ try {
      */
     $connectionManager->current()->getPerformedQuery();
 
-    $connectionManager->current()->changeSchema('privado');
 
 } catch (Exception $e) {
     /**

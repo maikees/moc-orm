@@ -1,7 +1,6 @@
 <?php
 
-namespace orm\connection;
-
+namespace QuickCoffee\Database\ORM;
 
 class Connection
 {
@@ -67,10 +66,10 @@ class Connection
                 $this->password
             );
 
-            $charsetQuery = "set names '$this->charset'";
+            $charsetQuery = "set names $this->charset";
 
             $this->_connection->query($charsetQuery);
-            
+
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode());
         }
@@ -194,5 +193,4 @@ class Connection
         $this->getConnection()->exec("SET search_path TO '$schema';");
         return $this;
     }
-
 }

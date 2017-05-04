@@ -20,7 +20,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * @var Save data on object
      */
-    private $_data;
+    private $_data = [];
 
     /**
      * @var set attributes for update
@@ -162,16 +162,18 @@ abstract class Model extends Query implements \JsonSerializable
 
         $start = microtime(true);
         $insert = $this->Connection->getConnection()->prepare($sql);
+        $this->burnError($insert);
 
         $insert->execute(array_values($this->_newData));
         $end = microtime(true);
+        $this->burnError($insert);
 
         $this->Connection->setPerformedQuery($insert->queryString, round(($end - $start), 5));
 
         if (is_callable($this->triggerAfter)) ($this->triggerAfter)();
 
         if ($update) {
-            if ($insert->errorInfo()[0] != 00000) throw new \Exception($insert->errorInfo()[2], $insert->errorInfo()[1]);
+            $this->burnError($insert);
 
             return true;
         }
@@ -183,6 +185,10 @@ abstract class Model extends Query implements \JsonSerializable
         }
 
         return true;
+    }
+
+    private function burnError($statment){
+        if (!is_null($statment->errorInfo()[1])) throw new \Exception($statment->errorInfo()[2], $statment->errorInfo()[1]);
     }
 
     /**
@@ -489,7 +495,7 @@ abstract class Model extends Query implements \JsonSerializable
         $select = trim($query);
         $select = strtolower($select);
 
-        $match = preg_match('/^select|return/', $select);
+        $match = preg_match('/^select|return|^with\srecursive/', $select);
 
         try {
             $this->verifyConnection();
@@ -502,8 +508,10 @@ abstract class Model extends Query implements \JsonSerializable
         $start = microtime(true);
 
         $consulta = $this->Connection->getConnection()->prepare($query);
+        $this->burnError($consulta);
 
         $consulta->execute($param);
+        $this->burnError($consulta);
 
         if (!$consulta) {
             $this->_data = false;
@@ -519,6 +527,8 @@ abstract class Model extends Query implements \JsonSerializable
         }
 
         $this->Connection->setPerformedQuery($query, round(($end - $start), 5));
+
+        $this->burnError($consulta);
 
         return $objetos;
     }
