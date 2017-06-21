@@ -57,7 +57,7 @@ try {
      *      @return Array with object if exists the data
      *      @return Array haven't data
      */
-    $useSql = UsageModel::sql('SELECT * FROM tb_usuarios');
+    $useSql = UsageModel::sql('SELECT  tb_usuarios');
 
     /**
      *  5. For get all data using not static method query in model, but this needed the method is instantiated in model

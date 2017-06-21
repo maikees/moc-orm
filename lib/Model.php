@@ -164,6 +164,12 @@ abstract class Model extends Query implements \JsonSerializable
         $insert = $this->Connection->getConnection()->prepare($sql);
         $this->burnError($insert);
 
+        $this->_newData = array_map(function ($data){
+            if(is_bool($data) and $data === false)  $data = 0;
+
+            return $data;
+        }, $this->_newData);
+
         $insert->execute(array_values($this->_newData));
         $end = microtime(true);
         $this->burnError($insert);
