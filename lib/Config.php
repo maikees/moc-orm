@@ -32,6 +32,12 @@ class Config
     private $_charset = [];
 
     /**
+     * List of drivers sets on connections
+     * @var $_driver
+     */
+    private $_schema = [];
+
+    /**
      * Constant to define set accepted drivers.
      */
     const DRIVERS = [
@@ -53,7 +59,7 @@ class Config
      * @return $this This object for other iterators
      * @throws \Exception case one or some elements on parameters are invalid
      */
-    public function addConfig($driver = 'mysql', $username = "root", $password = null, $host = "localhost", $database = null, $connectionName = null, $port = null, $charset = 'utf8')
+    public function addConfig($driver = 'mysql', $username = "root", $password = null, $host = "localhost", $database = null, $connectionName = null, $port = null, $charset = 'utf8', $defaultSchema = null)
     {
 
         #Begin: Verify if all parameters send is valid.
@@ -73,6 +79,7 @@ class Config
         $this->_password[$connectionName] = $password;
         $this->_driver[$connectionName] = $driver;
         $this->_charset[$connectionName] = $charset;
+        $this->_schema[$connectionName] = $defaultSchema;
 
         return $this;
     }
@@ -121,11 +128,12 @@ class Config
 
         if (array_key_exists($connectionName, $this->_connectionString)) {
             return [
-                'connectionString' =>$this->_connectionString[$connectionName],
+                'connectionString' => $this->_connectionString[$connectionName],
                 'driver' => $this->_driver[$connectionName],
                 'username' => $this->_username[$connectionName],
                 'password' => $this->_password[$connectionName],
-                'charset' => $this->_charset[$connectionName]];
+                'charset' => $this->_charset[$connectionName],
+                'schema' => $this->_schema[$connectionName]];
         } else {
             throw new \Exception("The connection name $connectionName is not set.");
         }
@@ -142,5 +150,4 @@ class Config
     {
         return $this->_currentConnectionName;
     }
-
 }

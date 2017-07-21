@@ -42,14 +42,13 @@ abstract class Model extends Query implements \JsonSerializable
      */
     protected $_current_custom_query_values = [];
 
-    public $errors;
-
     /**
      * Model constructor.
      * set connection in var and set this instance in var for interator
      */
     public function __construct($object = null)
     {
+
         try {
             $this->Connection = ConnectionManager::initialize()->current();
             self::$_instance = $this;
@@ -84,7 +83,7 @@ abstract class Model extends Query implements \JsonSerializable
      */
     public function __get($name)
     {
-        if(strtolower($name) == 'errors') return Error::instance();
+        if (strtolower($name) == 'errors') return Error::instance();
 
         if (!key_exists($name, $this->_data)) throw new \Exception("The attribute $name not found.");
 
@@ -181,6 +180,7 @@ abstract class Model extends Query implements \JsonSerializable
         if ($update) {
             $this->burnError($insert);
 
+            $this->cleanNewData();
             return true;
         }
 
@@ -394,7 +394,7 @@ abstract class Model extends Query implements \JsonSerializable
             throw new \Exception($e->getMessage());
         }
 
-        if (!is_array($parameters) and !is_numeric($parameters)) throw new \Exception('Invalid parameter type on model '.get_called_class().'.');
+        if (!is_array($parameters) and !is_numeric($parameters)) throw new \Exception('Invalid parameter type on model ' . get_called_class() . '.');
 
         self::$_instance->_current_custom_query[] = 'SELECT * FROM ' . static::$table_name . ' ';
 
@@ -427,8 +427,6 @@ abstract class Model extends Query implements \JsonSerializable
     final public static function select($colunm = '*')
     {
         self::instance();
-
-        self::$_instance->_data = [];
 
         try {
             self::$_instance->verifyConnection();

@@ -27,6 +27,7 @@ class Connection
     private $username;
     private $password;
     private $charset;
+    private $schema;
 
     /**
      * This save all query orm use.
@@ -45,6 +46,7 @@ class Connection
         $this->username = $config['username'];
         $this->password = $config['password'];
         $this->charset = $config['charset'];
+        $this->schema = $config['schema'];
 
         self::$_instance = $this;
         return $this;
@@ -70,7 +72,7 @@ class Connection
             $charsetQuery = "set names '$this->charset'";
 
             $this->_connection->query($charsetQuery);
-            
+
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage(), $e->getCode());
         }
@@ -153,6 +155,14 @@ class Connection
     }
 
     /**
+     * @return string
+     */
+    public function getSchema()
+    {
+        return $this->schema;
+    }
+
+    /**
      * Open transaction for insert, update, delete.
      * @return $this
      */
@@ -187,12 +197,12 @@ class Connection
      * @param $schema schema name
      * @return $this
      */
-    final public function changeSchema($schema = null){
-        if(!is_string($schema)) throw new \InvalidArgumentException('The parameter don\'t is an String.');
-        if($this->driver == 'mysql') throw new \InvalidArgumentException('This driver not supported schemas.');
+    final public function changeSchema($schema = null)
+    {
+        if (!is_string($schema)) throw new \InvalidArgumentException('The parameter don\'t is an String.');
+        if ($this->driver == 'mysql') throw new \InvalidArgumentException('This driver not supported schemas.');
 
         $this->getConnection()->exec("SET search_path TO '$schema';");
         return $this;
     }
-
 }

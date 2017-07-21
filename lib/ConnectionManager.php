@@ -77,6 +77,10 @@ class ConnectionManager
 
         $instance->currentConnection = $instance->connections[$connectionName];
 
+        if ($instance->currentConnection->getDriver() == 'pgsql') {
+            $instance->currentConnection->changeSchema($instance->currentConnection->getSchema());
+        }
+
         return $instance;
     }
 
