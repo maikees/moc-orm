@@ -41,7 +41,7 @@ class Config
      * Constant to define set accepted drivers.
      */
     const DRIVERS = [
-        "msyql",
+        "mysql",
         "pgsql",
     ];
 
@@ -63,12 +63,12 @@ class Config
     {
 
         #Begin: Verify if all parameters send is valid.
-        if (!is_string($driver) and !array_search($driver, DRIVERS)) throw new \Exception("The driver $driver don't supported.");
-        if (!is_string($username)) throw new \Exception("Invalid username.");
-        if (!is_string($password)) throw new \Exception("Invalid password.");
-        if (!is_string($host)) throw new \Exception("Invalid host.");
-        if (!is_string($database)) throw new \Exception("Invalid database name.");
-        if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
+        if (!is_string($driver) || !in_array($driver, self::DRIVERS)) throw new \Exception("The driver $driver don't supported.");
+        if (!is_string($username) || empty($username)) throw new \Exception("Invalid username.");
+        if (!is_string($password) || empty($password)) throw new \Exception("Invalid password.");
+        if (!is_string($host) || empty($host)) throw new \Exception("Invalid host.");
+        if (!is_string($database) || empty($database)) throw new \Exception("Invalid database name.");
+        $this->validatesConnectionName($connectionName);
 
         $port = is_null($port) ? '' : (int)$port;
         if (!is_null($port) && !is_int($port)) throw new \Exception("Invalid port format.");
@@ -124,7 +124,7 @@ class Config
      */
     public function getConnection($connectionName)
     {
-        if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
+        $this->validatesConnectionName($connectionName);
 
         if (array_key_exists($connectionName, $this->_connectionString)) {
             return [
@@ -141,13 +141,10 @@ class Config
         return $this;
     }
 
-
-    /**
-     * Get name on current connection
-     * @return string name on current connection or null if don't have
-     */
-    final public function getCurrentConnectionName()
+    private function validatesConnectionName($connectionName)
     {
-        return $this->_currentConnectionName;
+        if (!is_string($connectionName) || empty($connectionName)) {
+            throw new \Exception("Invalid connection name.");
+        }
     }
 }
