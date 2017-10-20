@@ -1,6 +1,6 @@
 <?php
 
-namespace MocOrm\Support\Database;
+namespace MocOrm\Support;
 
 use MocOrm\Connection\ConnectionManager;
 

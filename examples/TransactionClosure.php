@@ -31,7 +31,7 @@ include_once 'UsageModel.php';
  */
 
 use MocOrm\connection\ConnectionManager;
-use MocOrm\Support\Database\Transaction;
+use MocOrm\Support\Transaction;
 use MocOrm\usage\UsageModel;
 
 try {

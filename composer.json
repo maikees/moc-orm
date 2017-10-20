@@ -6,7 +6,8 @@
     "autoload": {
         "psr-4": {
           "MocOrm\\Connection\\": "lib/",
-          "MocOrm\\Model\\": "lib/"
+          "MocOrm\\Model\\": "lib/",
+          "MocOrm\\Support\\": "support/"
         }
     },
     "autoload-dev": {
