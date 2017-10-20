@@ -30,9 +30,9 @@ include_once 'UsageModel.php';
  *
  */
 
-use MocOrm\connection\ConnectionManager;
+use MocOrm\Connection\ConnectionManager;
 use MocOrm\Support\Transaction;
-use MocOrm\usage\UsageModel;
+use MocOrm\Usage\UsageModel;
 
 try {
     /**
