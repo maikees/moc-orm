@@ -18,15 +18,5 @@
         </SOURCES>
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="PHARS">
-        <CLASSES>
-          <root url="phar://$MODULE_DIR$/../../../php/pharcommand.phar/" />
-        </CLASSES>
-        <SOURCES>
-          <root url="phar://$MODULE_DIR$/../../../php/pharcommand.phar/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
   </component>
 </module>

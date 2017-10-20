@@ -1,6 +1,6 @@
 <?php
 
-namespace orm\model;
+namespace mocorm\model;
 
 use orm\connection\ConnectionManager;
 use PHPUnit\Runner\Exception;

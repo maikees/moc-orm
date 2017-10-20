@@ -1,6 +1,6 @@
 <?php
 
-namespace orm\connection;
+namespace mocorm\connection;
 
 
 class Connection

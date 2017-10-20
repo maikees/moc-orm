@@ -23,8 +23,8 @@ include_once 'UsageModel.php';
  *
  */
 
-use orm\connection\ConnectionManager;
-use quickcooffe\usage\UsageModel;
+use mocorm\connection\ConnectionManager;
+use mocorm\usage\UsageModel;
 
 try {
     /**

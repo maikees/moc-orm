@@ -1,7 +1,7 @@
 <?php
 include_once '../lib/autoload.php';
 
-use orm\connection\ConnectionManager;
+use mocorm\connection\ConnectionManager;
 
 try {
 
