@@ -1,0 +1,21 @@
+{
+    "require-dev": {
+      "phpunit/phpunit": "^6.0",
+      "phpunit/phpunit-mock-objects": "^4.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "mocorm\\connection\\": "lib/",
+          "mocorm\\model\\": "lib/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+      "test": ["phpunit"],
+      "test-cover": "phpunit --coverage-text"
+    }
+}
