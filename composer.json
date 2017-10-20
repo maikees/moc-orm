@@ -5,13 +5,13 @@
     },
     "autoload": {
         "psr-4": {
-          "mocorm\\connection\\": "lib/",
-          "mocorm\\model\\": "lib/"
+          "MocOrm\\Connection\\": "lib/",
+          "MocOrm\\Model\\": "lib/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "MocOrm\\Tests\\": "tests/"
         }
     },
     "scripts": {
