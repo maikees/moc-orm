@@ -23,7 +23,7 @@ class Error
     {
         $instance = self::instance();
 
-        if($instance->burst) $instance->burst($message, $code, $type);
+        if ($instance->burst) $instance->burst($message, $code, $type);
 
         $errors['message'] = $message;
         $errors['code'] = $code;
@@ -36,7 +36,8 @@ class Error
 
     public static function instance()
     {
-        if (!self::$_instance) self::$_instance = new self(); return self::$_instance;
+        if (!self::$_instance) self::$_instance = new self();
+        return self::$_instance;
     }
 
     public function getAll()
@@ -54,9 +55,10 @@ class Error
         return current($this->errors);
     }
 
-    private function burst($message, $code, $type){
+    private function burst($message, $code, $type)
+    {
 //        if(!array_search($type, ERRORS)) throw new \InvalidArgumentException('Type of burst not found.');
-        $type = '\\'.$type;
+        $type = '\\' . $type;
         throw new $type($message, $code);
     }
 }

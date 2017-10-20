@@ -2,7 +2,8 @@
 
 namespace MocOrm\model;
 
-abstract class Query{
+abstract class Query
+{
     /**
      * @var array Save the current query for search on database
      */

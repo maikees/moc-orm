@@ -204,11 +204,12 @@ abstract class Model extends Query implements \JsonSerializable
     {
         try {
             $this->verifyConnection();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
         if (!isset(static::$primary_key)) throw new \Exception('Primary key don\'t set');
+
         if (!is_numeric($this->{static::$primary_key})) throw new \Exception('Primary key value don\'t is valid');
 
         $sql = ' DELETE FROM ' . static::$table_name;
