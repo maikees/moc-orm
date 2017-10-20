@@ -59,9 +59,17 @@ class Config
      * @return $this This object for other iterators
      * @throws \Exception case one or some elements on parameters are invalid
      */
-    public function addConfig($driver = 'mysql', $username = "root", $password = null, $host = "localhost", $database = null, $connectionName = null, $port = null, $charset = 'utf8', $defaultSchema = null)
+    public function addConfig(
+                                $driver = 'mysql',
+                                $username = "root",
+                                $password = null,
+                                $host = "localhost",
+                                $database = null,
+                                $connectionName = null,
+                                $port = null,
+                                $charset = 'utf8',
+                                $defaultSchema = null)
     {
-
         #Begin: Verify if all parameters send is valid.
         if (!is_string($driver) || !in_array($driver, self::DRIVERS)) throw new \Exception("The driver $driver don't supported.");
         if (!is_string($username) || empty($username)) throw new \Exception("Invalid username.");
@@ -72,7 +80,6 @@ class Config
 
         $port = is_null($port) ? '' : (int)$port;
         if (!is_null($port) && !is_int($port)) throw new \Exception("Invalid port format.");
-
         #Constructor of the connection string
         $this->_connectionString[$connectionName] = "$driver:host=$host;dbname=$database;port=$port;";
         $this->_username[$connectionName] = $username;

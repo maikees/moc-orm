@@ -45,10 +45,23 @@ try {
      */
 
     $connectionManager = ConnectionManager::initialize(function ($connection) {
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
+        /**
+         * Add the configurations using the method addConfig, accepts various configurations
+         *      Arguments:
+         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port', charset, schema);
+         *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
+         * @return Connection
+         */
 
-        return $connection;
+        $connection->addConfig(
+            'mysql',
+            'user',
+            'pass',
+            'host',
+            'database',
+            'name',
+            'port',
+            'char');
     });
 
     /**
@@ -57,17 +70,6 @@ try {
      * @return Connection
      */
 //    $connection->setConnection('postgres_local');
-
-    /**
-     *  4. Instantiate the model
-     */
-    $connectionManager = ConnectionManager::initialize(function ($connection) {
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
-
-        return $connection;
-    });
-
 //    $connectionManager->open('local');
 
     $usage = new UsageModel();

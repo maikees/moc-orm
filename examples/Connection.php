@@ -45,6 +45,7 @@ include_once '../lib/autoload.php';
 /**
  * 1. Set the namespace to connection
  */
+
 use MocOrm\Connection\ConnectionManager;
 
 try {
@@ -56,16 +57,33 @@ try {
      */
     $connectionManager = ConnectionManager::initialize(function ($connection) {
         /**
-         * 4. Add the configurations using the method addConfig, accepts various configurations
+         * Add the configurations using the method addConfig, accepts various configurations
          *      Arguments:
-         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port');
+         *      - $connection->addConfig('driver', 'user', 'password', 'host', 'database', 'connectionName', 'port', charset, schema);
          *      - Driver options ['mysql', 'pgsql'] -- Mysql, postgres
          * @return Connection
          */
-        $connection->addConfig('mysql', 'root', '', 'localhost', 'local_controlook', 'local', 3306);
-        $connection->addConfig('pgsql', 'postgres', '123456', 'localhost', 'local_controlook', 'postgres_local', 5432);
 
-        return $connection;
+        $connection->addConfig(
+            'mysql',
+            'user',
+            'pass',
+            'host',
+            'database',
+            'name',
+            'port',
+            'char');
+
+        $connection->addConfig(
+            'pgsql',
+            'user',
+            'pass',
+            'host',
+            'database',
+            'name',
+            'port',
+            'char',
+            'schema');
     });
 
     /**
@@ -79,7 +97,6 @@ try {
     /**
      * 6. if needed change the connection using the method change
      *      -     $connectionManager::change('local');
-
      * @return Connection
      */
     $connectionManager::change('local');
