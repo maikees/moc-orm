@@ -30,8 +30,8 @@ include_once 'UsageModel.php';
  *
  */
 
-use mocorm\connection\ConnectionManager;
-use mocorm\usage\UsageModel;
+use MocOrm\Connection\ConnectionManager;
+use MocOrm\Usage\UsageModel;
 
 try {
     /**

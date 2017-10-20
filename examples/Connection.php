@@ -45,7 +45,7 @@ include_once '../lib/autoload.php';
 /**
  * 1. Set the namespace to connection
  */
-use mocorm\connection\ConnectionManager;
+use MocOrm\Connection\ConnectionManager;
 
 try {
 
