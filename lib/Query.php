@@ -1,6 +1,6 @@
 <?php
 
-namespace MocOrm\model;
+namespace MocOrm\Model;
 
 abstract class Query
 {

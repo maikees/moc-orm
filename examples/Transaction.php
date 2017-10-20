@@ -83,7 +83,7 @@ try {
     $connectionManager->current()->commitTransaction();
 
 
-} catch (Exception $e) {
+} catch (\Exception $e) {
     /**
      * All Exceptions
      */

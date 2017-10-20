@@ -337,6 +337,7 @@ abstract class Model extends Query implements \JsonSerializable
         self::instance();
 
         self::$_instance->_data = [];
+        self::$_instance->_newData = [];
 
         if (!is_array($attributes)) throw new \Exception("Invalid parameter type.");
 
@@ -351,7 +352,7 @@ abstract class Model extends Query implements \JsonSerializable
 
         try {
             self::$_instance->verifyConnection();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Throw new \Exception($e->getMessage());
         }
 
