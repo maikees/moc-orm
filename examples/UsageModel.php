@@ -1,9 +1,9 @@
 <?php
 
 
-namespace mocorm\usage;
+namespace MocOrm\Usage;
 
-use mocorm\model\Model;
+use MocOrm\Model\Model;
 
 /**
  *  1. Extends your model to class Model, using namespace orm\model\Model

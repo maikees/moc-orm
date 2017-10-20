@@ -1,9 +1,8 @@
 <?php
 
-namespace mocorm\model;
+namespace MocOrm\Model;
 
-use orm\connection\ConnectionManager;
-use PHPUnit\Runner\Exception;
+use MocOrm\Connection\ConnectionManager;
 
 abstract class Model extends Query implements \JsonSerializable
 {

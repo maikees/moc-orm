@@ -1,6 +1,6 @@
 <?php
 
-namespace mocorm\connection;
+namespace MocOrm\Connection;
 
 class Config
 {
