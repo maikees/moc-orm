@@ -21,3 +21,7 @@ You can find practical usage examples in [examples](https://github.com/maikees/m
 ## License
 
 This library is released under the [MIT license](https://github.com/maikees/moc-orm/blob/master/LICENSE).
+
+## Maintained by
+
+This library is maintained by [MOC SOLUÇÕES](http://mocsolucoes.com.br).
