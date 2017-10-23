@@ -7,37 +7,37 @@ use MocOrm\Connection\ConnectionManager;
 abstract class Model extends Query implements \JsonSerializable
 {
     /**
-     * @var $_instance Save current instance
+     * $_instance Save current instance
      */
     private static $_instance;
 
     /**
-     * @var $Connection Save connection instance
+     * $Connection Save connection instance
      */
     private $Connection;
 
     /**
-     * @var $_data Save data on object
+     *  $_data Save data on object
      */
     private $_data = [];
 
     /**
-     * @var $_newData Set attributes for update
+     *  $_newData Set attributes for update
      */
     private $_newData = [];
 
     /**
-     * @var $triggerAfter closure Actived trigger after
+     *  $triggerAfter closure Actived trigger after
      */
     private $triggerAfter = null;
 
     /**
-     * @var $triggerBefore closure Actived trigger after
+     *  $triggerBefore closure Actived trigger after
      */
     private $triggerBefore = null;
 
     /**
-     * @var $_current_custom_query_values array Save the value to custom query
+     *  $_current_custom_query_values array Save the value to custom query
      */
     protected $_current_custom_query_values = [];
 
