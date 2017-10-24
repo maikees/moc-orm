@@ -22,7 +22,7 @@ class ConnectionManager
     /**
      * @_instance object this instance
      */
-    private static $_instance;
+    protected static $_instance;
 
     /**
      * @currentConnectionName string of the current connection name
@@ -36,7 +36,7 @@ class ConnectionManager
 
     /**
      * Initialize the object or return this object if have value set in attribute $_instance
-     * @param \Closure $connection
+     * @param \Closure $config
      * @return ConnectionManager
      */
     public static function initialize($config = null)
@@ -63,7 +63,7 @@ class ConnectionManager
     {
         $instance = self::$_instance;
 
-        if (!is_string($connectionName)) throw new \Exception("Invalid connection name.");
+        if (!is_string($connectionName) || empty($connectionName)) throw new \Exception("Invalid connection name.");
         if (!$instance->hasConnection($connectionName)) throw new \Exception("The connection name $connectionName is not set.");
         if ($instance->hasOpen($connectionName)) throw new \Exception('This connection is actived.');
 
@@ -93,9 +93,9 @@ class ConnectionManager
     public function current()
     {
         if (empty($this->currentConnection)) {
-            $configs = $this->Config->getConfigs();
+            $configs = ($this->Config) ? $this->Config->getConfigs() : null;
 
-            if (count($configs) == 0) throw new \Exception('Not have connection');
+            if (count($configs) == 0) throw new \Exception('No connections are available.');
 
             $default = $this->Config->getDefault();
 
@@ -176,11 +176,7 @@ class ConnectionManager
      */
     private function hasOpen($connectionName)
     {
-        if (array_key_exists($connectionName, $this->connections)) {
-            return true;
-        } else {
-            return false;
-        }
+        return array_key_exists($connectionName, $this->connections);
     }
 
     /**
@@ -199,10 +195,9 @@ class ConnectionManager
      */
     private function hasConnection($connectionName)
     {
-        if (array_key_exists($connectionName, $this->Config->getConfigs())) {
-            return true;
-        } else {
-            return false;
-        }
+        return array_key_exists(
+            $connectionName,
+            $this->Config->getConfigs()
+        );
     }
 }
