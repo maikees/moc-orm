@@ -1,6 +1,6 @@
 <?php
 
-namespace MocOrm\Tests;
+namespace MocOrm\Tests\Connection;
 
 use MocOrm\Connection\Config;
 

@@ -36,7 +36,9 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "MocOrm\\Tests\\": "tests/"
+      "MocOrm\\Tests\\": "tests/",
+      "MocOrm\\Tests\\Connection\\": "tests/Connection/",
+      "MocOrm\\Tests\\Model\\": "tests/Model/"
     }
   },
   "scripts": {

@@ -1,6 +1,6 @@
 <?php
 
-namespace MocOrm\Tests;
+namespace MocOrm\Tests\Model;
 
 use MocOrm\Model\Error;
 
@@ -25,7 +25,7 @@ final class ErrorTest extends \PHPUnit\Framework\TestCase
     {
         self::$error = Error::create('Last error', 69);
         $this->assertInstanceOf(Error::class, self::$error);
-        
+
         $erro = self::$error->getLast();
         $this->assertEquals('Last error', $erro['message']);
         $this->assertEquals(69, $erro['code']);
