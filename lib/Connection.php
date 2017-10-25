@@ -34,7 +34,7 @@ class Connection
 
     /**
      * This save all query orm use.
-     * @var query string
+     * @var Array Query strings
      */
     private $performed_query = [];
 

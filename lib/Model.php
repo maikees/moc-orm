@@ -23,7 +23,7 @@ abstract class Model extends Query implements \JsonSerializable
     private $_data = [];
 
     /**
-     *  @var array $_newData Set attributes for update
+     *  @var array|boolean $_newData Set attributes for update
      */
     private $_newData = [];
 
@@ -50,10 +50,10 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Model constructor.
      * set connection in var and set this instance in var for interator
-     * @param null $object
+     * @param array|null $array
      * @throws \Exception
      */
-    public function __construct($object = null)
+    public function __construct($array = null)
     {
         $methods = get_class_methods(get_called_class());
 
@@ -67,11 +67,11 @@ abstract class Model extends Query implements \JsonSerializable
                 $this->/** @scrutinizer ignore-call */onLoad();
             }
 
-            if (!is_null($object)) {
-                if (!is_array($object)) throw new \InvalidArgumentException('Accept only array from object');
+            if (!is_null($array)) {
+                if (!is_array($array)) throw new \InvalidArgumentException('Accept only array from object');
 
-                $this->_data = $object;
-                $this->_newData = $object;
+                $this->_data = $array;
+                $this->_newData = $array;
             }
 
             $this->Result = new Result();
@@ -121,7 +121,7 @@ abstract class Model extends Query implements \JsonSerializable
     }
 
     /**
-     * @return array Save for info in debug only attributes in _data
+     * @return array|boolean Save for info in debug only attributes in _data
      */
     public function __debugInfo()
     {
@@ -326,7 +326,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Get all data on database needed table name in Model
      * @throws \Exception Don't set table name in model.
-     * @return Model|array all data in format Object
+     * @return Model|array|boolean all data in format Object
      */
     public static function all()
     {
@@ -506,7 +506,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Define the current connection on name
-     * @param Model $connectionName This is connection name
+     * @param String $connectionName This is connection name
      * @return Model This from other implementations
      */
     protected function setConnection($connectionName)
@@ -639,7 +639,7 @@ abstract class Model extends Query implements \JsonSerializable
      */
     final protected function setTriggerBefore($closure = null)
     {
-        if (!is_callable($closure)) throw new Exception('The parameter don\'t is an closure.');
+        if (!is_callable($closure)) throw new \Exception('The parameter don\'t is an closure.');
 
         $this->triggerBefore = $closure;
 
