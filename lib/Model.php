@@ -523,7 +523,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Execute the query
      * @param String $query The query for execute
-     * @return Model|boolean $objects Results on query executed
+     * @return Array|Model|boolean|integer $objects Results on query executed
      */
     protected function query($query, $param = [])
     {
@@ -609,7 +609,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Get all execute query from ORM
-     * @return array all query executed
+     * @return Array all query executed
      */
     final protected function getAllPerfomedQuery()
     {

@@ -95,7 +95,7 @@ class Connection
     }
 
     /**
-     * @return query
+     * @return Array query
      */
     public function getPerformedQuery()
     {

@@ -132,7 +132,7 @@ class Config
     /**
      * Set the current connection on connection name.
      * @param string $connectionName name on connection
-     * @return $this|array This object from other interator
+     * @return Config|array This object from other interator
      * @throws \Exception if the connect name haven't set;
      */
     public function getConnection($connectionName)

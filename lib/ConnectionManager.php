@@ -5,22 +5,32 @@ namespace MocOrm\Connection;
 class ConnectionManager
 {
     /**
-     * @Connection array is all connections opened
+     * @var Connection Connection object is a of Connection
+     */
+    private $Connection;
+
+    /**
+     * @var array $connections is all connections opened
      */
     private $connections = [];
 
     /**
-     * @_instance object this instance
+     * @var Connection object is the current connection
+     */
+    private $currentConnection;
+
+    /**
+     * @var ConnectionManager $_instance object this instance
      */
     private static $_instance;
 
     /**
-     * @currentConnectionName string of the current connection name
+     * @var string of the current connection name
      */
     private $_currentConnectionName;
 
     /**
-     * @Config This is a singleton object for save all configs
+     * @var Config $Config This is a singleton object for save all configs
      */
     private $Config;
 
