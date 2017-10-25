@@ -78,9 +78,7 @@ try {
      * 5. Set values in attributes
      */
 
-    $usage->id2 = 10;
     $usage->nome = 'Teste Save';
-//    $usage->nome23 = 'Teste Save2';
     $result = $usage->save();
     var_dump($result);
     /**

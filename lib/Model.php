@@ -59,7 +59,7 @@ abstract class Model extends Query implements \JsonSerializable
 
         try {
             $this->Connection = ConnectionManager::initialize()->current();
-            $this->_instance = $this;
+            self::$_instance = $this;
 
             $this->cleanNewData();
 
@@ -206,7 +206,6 @@ abstract class Model extends Query implements \JsonSerializable
             $sql .= " VALUES ";
             $sql .= " ($repeat); ";
         }
-
 
         if (is_callable($this->triggerBefore)) ($this->triggerBefore)();
 
