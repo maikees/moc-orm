@@ -22,7 +22,7 @@ class ConnectionManager
     /**
      * @_instance object this instance
      */
-    protected static $_instance;
+    private static $_instance;
 
     /**
      * @currentConnectionName string of the current connection name

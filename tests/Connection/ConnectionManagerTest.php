@@ -13,6 +13,25 @@ final class ConnectionManagerTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(ConnectionManager::class, $got);
     }
 
+    /**
+     * @expectedException Exception
+     * @expectedExceptionMessage No connections are available.
+     */
+    public function testCurrentWithoutConnections()
+    {
+        // ConnectionManagerHelper::clearInstance();
+        $connectionManager = ConnectionManager::initialize();
+        $connectionManager->current();
+    }
+
+    public function testGetAllActive()
+    {
+        // ConnectionManagerHelper::clearInstance();
+        $connectionManager = ConnectionManager::initialize();
+        $got = $connectionManager->getAllActive();
+        $this->assertEquals(0, count($got));
+    }
+
     public function testInitializeWithConfigCallable()
     {
         $got = ConnectionManager::initialize(
@@ -45,24 +64,5 @@ final class ConnectionManagerTest extends \PHPUnit\Framework\TestCase
     {
         $connectionManager = ConnectionManager::initialize();
         $connectionManager->open('CONNECTION_NAME');
-    }
-
-    /**
-     * @expectedException Exception
-     * @expectedExceptionMessage No connections are available.
-     */
-    public function testCurrentWithoutConnections()
-    {
-        ConnectionManagerHelper::clearInstance();
-        $connectionManager = ConnectionManager::initialize();
-        $connectionManager->current();
-    }
-
-    public function testGetAllActive()
-    {
-        ConnectionManagerHelper::clearInstance();
-        $connectionManager = ConnectionManager::initialize();
-        $got = $connectionManager->getAllActive();
-        $this->assertEquals(0, count($got));
     }
 }
