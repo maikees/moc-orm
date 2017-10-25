@@ -3,6 +3,8 @@
 namespace MocOrm\Connection;
 
 
+use phpDocumentor\Reflection\Types\Boolean;
+
 class Connection
 {
     /**
@@ -28,6 +30,7 @@ class Connection
     private $password;
     private $charset;
     private $schema;
+    private $options;
 
     /**
      * This save all query orm use.
@@ -204,5 +207,20 @@ class Connection
 
         $this->getConnection()->exec("SET search_path TO '$schema';");
         return $this;
+    }
+
+    /**
+     * @param bool $logger
+     * @return Connection
+     */
+    final public function setAppLogger($logger): Connection {
+        $this->options['appLogger'] = $logger;
+
+        return $this;
+    }
+
+
+    final public function getAppLogger() {
+        return $this->options['appLogger'];
     }
 }

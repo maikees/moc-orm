@@ -3,43 +3,49 @@
 namespace MocOrm\Model;
 
 use MocOrm\Connection\ConnectionManager;
+use MocOrm\Support\Log;
 
 abstract class Model extends Query implements \JsonSerializable
 {
     /**
-     * $_instance Save current instance
+     * @var Model $_instance Save current instance
      */
     private static $_instance;
 
     /**
-     * $Connection Save connection instance
+     * @var Connection $Connection Save connection instance
      */
     private $Connection;
 
     /**
-     *  $_data Save data on object
+     *  @var array $_data Save data on object
      */
     private $_data = [];
 
     /**
-     *  $_newData Set attributes for update
+     *  @var array $_newData Set attributes for update
      */
     private $_newData = [];
 
     /**
-     *  $triggerAfter closure Actived trigger after
+     *  @var closure $triggerAfter Actived trigger after
      */
     private $triggerAfter = null;
 
     /**
-     *  $triggerBefore closure Actived trigger after
+     *  @var closure $triggerBefore Actived trigger after
      */
     private $triggerBefore = null;
 
     /**
-     *  $_current_custom_query_values array Save the value to custom query
+     *  @var array $_current_custom_query_values Save the value to custom query
      */
     protected $_current_custom_query_values = [];
+
+    private $Result;
+
+    protected static $table_name;
+    protected static $primary_key;
 
     /**
      * Model constructor.
@@ -47,6 +53,7 @@ abstract class Model extends Query implements \JsonSerializable
      */
     public function __construct($object = null)
     {
+        $methods = get_class_methods(get_called_class());
 
         try {
             $this->Connection = ConnectionManager::initialize()->current();
@@ -54,13 +61,24 @@ abstract class Model extends Query implements \JsonSerializable
 
             $this->cleanNewData();
 
+            if (in_array('onLoad', $methods)) {
+                $this->onLoad();
+            }
+
             if (!is_null($object)) {
                 if (!is_array($object)) throw new \InvalidArgumentException('Accept only array from object');
 
                 $this->_data = $object;
                 $this->_newData = $object;
             }
-        } catch (Exception $e) {
+
+            $this->Result = new Result();
+
+            if($this->Result && !$this->Result->getResults()) {
+                $clone = clone $this;
+                $this->Result->setResults($clone);
+            }
+        } catch (\Exception $e) {
             throw $e;
         }
     }
@@ -101,7 +119,7 @@ abstract class Model extends Query implements \JsonSerializable
     }
 
     /**
-     * @return Save for info in debug only attributes in _data
+     * @return array Save for info in debug only attributes in _data
      */
     public function __debugInfo()
     {
@@ -109,9 +127,24 @@ abstract class Model extends Query implements \JsonSerializable
     }
 
     /**
+     * @param $name
+     */
+    function __unset($name)
+    {
+        unset($this->_data[$name]);
+        unset($this->_newData[$name]);
+    }
+
+    function __clone()
+    {
+        unset($this->_data[static::$primary_key]);
+        $this->_newData = $this->_data;
+    }
+
+    /**
      * Insert the new data in database not static mode.
      * @param array $attributes Parameters, this is a mirror on database.
-     * @return bool|Model|Save False if not save in databse, and this instance if save.
+     * @return bool|Model False if not save in databse, and this instance if save.
      * @throws \Exception If the parameters isn't one array.
      */
     public function save()
@@ -133,10 +166,19 @@ abstract class Model extends Query implements \JsonSerializable
          * Edit case have primary key value
          */
         if (!empty($this->_data[$key])) {
+            $logger = [
+              'function' => 'Update',
+              'next' => $this->_data,
+              'prev' => $this->Result->getResults()
+            ];
+
+            $this->saveLogger($logger);
+            $this->Result->setResults(clone $this);
+
             $sql = 'UPDATE ' . $_tableName . ' SET ';
 
-            if (count($this->_newData) <= 0){
-                Error::create('Don\'t have alter data.', 1,'InvalidArgumentException');
+            if (count($this->_newData) <= 0) {
+                Error::create('Don\'t have alter data.', 1, 'InvalidArgumentException');
                 return false;
             }
 
@@ -147,6 +189,13 @@ abstract class Model extends Query implements \JsonSerializable
 
             $update = true;
         } else {
+            $logger = [
+                'function' => 'Save',
+                'next' => $this->_data,
+            ];
+
+            $this->saveLogger($logger);
+
             /**
              * Insert case don't have primary key
              */
@@ -156,14 +205,15 @@ abstract class Model extends Query implements \JsonSerializable
             $sql .= " ($repeat); ";
         }
 
+
         if (is_callable($this->triggerBefore)) ($this->triggerBefore)();
 
         $start = microtime(true);
         $insert = $this->Connection->getConnection()->prepare($sql);
         $this->burnError($insert);
 
-        $this->_newData = array_map(function ($data){
-            if(is_bool($data) and $data === false)  $data = 0;
+        $this->_newData = array_map(function ($data) {
+            if (is_bool($data) and $data === false) $data = 0;
 
             return $data;
         }, $this->_newData);
@@ -192,7 +242,27 @@ abstract class Model extends Query implements \JsonSerializable
         return true;
     }
 
-    private function burnError($statment){
+    private function saveLogger($params) {
+        $class = get_called_class();
+
+        if (
+            $this->Connection->getAppLogger() and
+            $class != 'MocOrm\Support\Log'
+        ) {
+
+            $log = (new Log)
+                ->setNext(@$params['next'])
+                ->setName($class)
+                ->setFunction($params['function'])
+                ->setPrev(@$params['prev']);
+
+            $log->save();
+        }
+    }
+
+
+    private function burnError($statment)
+    {
         if (!is_null($statment->errorInfo()[1])) throw new \Exception($statment->errorInfo()[2], $statment->errorInfo()[1]);
     }
 
@@ -205,7 +275,7 @@ abstract class Model extends Query implements \JsonSerializable
         try {
             $this->verifyConnection();
         } catch (\Exception $e) {
-            Throw new \Exception($e->getMessage());
+            throw new \Exception($e->getMessage());
         }
 
         if (!isset(static::$primary_key)) throw new \Exception('Primary key don\'t set');
@@ -230,8 +300,17 @@ abstract class Model extends Query implements \JsonSerializable
 
         if (is_callable($this->triggerAfter)) ($this->triggerAfter)();
 
-        if ($insert->rowCount() > 0) return true;
-        else return false;
+        if ($insert->rowCount() > 0) {
+            $logger = [
+                'function' => 'Delete',
+                'prev' => $this->_data,
+            ];
+
+            $this->saveLogger($logger);
+
+            return true;
+        }
+        else{ return false; };
     }
 
     /**
@@ -249,30 +328,23 @@ abstract class Model extends Query implements \JsonSerializable
      */
     public static function all()
     {
+        self::instance();
+
         if (!isset(static::$table_name)) throw new \Exception('Don\'t set table name in model.');
 
         $currentTable = static::$table_name;
 
-        self::instance();
-
         $instance = self::$_instance;
+
         try {
             self::$_instance->verifyConnection();
-        } catch (Exception $e) {
-            Throw new \Exception($e->getMessage());
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
         }
 
         $sql = "SELECT * FROM $currentTable ";
 
-        $start = microtime(true);
-        $consulta = $instance->Connection->getConnection()->prepare($sql);
-        $consulta->execute();
-        $objetos = $consulta->fetchAll(\PDO::FETCH_CLASS, get_called_class());
-        $end = microtime(true);
-
-        $instance->Connection->setPerformedQuery($consulta->queryString, round(($end - $start), 5));
-
-        return $instance->_data = $objetos;
+        return $instance->query($sql);
     }
 
     /**
@@ -336,47 +408,12 @@ abstract class Model extends Query implements \JsonSerializable
     {
         self::instance();
 
-        self::$_instance->_data = [];
-        self::$_instance->_newData = [];
-
-        if (!is_array($attributes)) throw new \Exception("Invalid parameter type.");
-
-        $repeat = substr(str_repeat(' ?, ', count($attributes)), 0, -2);
-
-        $sql = 'INSERT INTO ' . static::$table_name;
-        $sql .= ' (' . implode(', ', array_keys($attributes)) . ') ';
-        $sql .= " VALUES ";
-        $sql .= " ($repeat); ";
-
         $instance = self::$_instance;
 
-        try {
-            self::$_instance->verifyConnection();
-        } catch (\Exception $e) {
-            Throw new \Exception($e->getMessage());
-        }
-
-        if (is_callable(self::$_instance->triggerBefore)) self::$_instance->triggerBefore();
-
-        $start = microtime(true);
-
-        $insert = $instance->Connection->getConnection()->prepare($sql);
-        $insert->execute(array_values($attributes));
-
-        $end = microtime(true);
-
-        $instance->Connection->setPerformedQuery($insert->queryString, round(($end - $start), 5));
-
-        if (is_callable(self::$_instance->triggerAfter)) self::$_instance->triggerAfter();
-
         $instance->_data = $attributes;
-        $instance->_data[static::$primary_key] = $instance->Connection->getConnection()->lastInsertId();
+        $instance->_newData = $attributes;
 
-        if ($instance->Connection->getConnection()->lastInsertId() == '-1' || $instance->Connection->getConnection()->lastInsertId() == 0) {
-            return false;
-        } else {
-            return $instance;
-        }
+        return $instance->save();
     }
 
     /**
@@ -389,34 +426,46 @@ abstract class Model extends Query implements \JsonSerializable
     {
         self::instance();
 
+        $instance = self::$_instance;
+
         try {
-            self::$_instance->verifyConnection();
-        } catch (Exception $e) {
+            $instance->verifyConnection();
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
 
         if (!is_array($parameters) and !is_numeric($parameters)) throw new \Exception('Invalid parameter type on model ' . get_called_class() . '.');
 
-        self::$_instance->_current_custom_query[] = 'SELECT * FROM ' . static::$table_name . ' ';
+        $instance->_current_custom_query[] = 'SELECT * FROM ' . static::$table_name . ' ';
 
         switch ($parameters) {
             case is_numeric($parameters):
                 if (!isset(static::$primary_key)) throw new \Exception("Invalid parameter type.");
 
-                self::$_instance->_current_custom_query_values[] = $parameters;
-                self::$_instance->_current_custom_query[] = ' WHERE ' . static::$primary_key . ' = ?';
+                $instance->_current_custom_query_values[] = $parameters;
+                $instance->_current_custom_query[] = ' WHERE ' . static::$primary_key . ' = ?';
 
                 break;
             case is_array($parameters):
                 break;
             default:
-                throw new Exception('Invalid parameter type.');
+                throw new \Exception('Invalid parameter type.');
                 break;
         }
 
-        $done = self::$_instance->done();
+        $done = $instance->done();
 
-        return count($done) > 0 ? $done[0] : null;
+        if(count($done) > 0) {
+            $done = $done[0];
+
+            $clone = clone $done;
+
+            $done->Result->setResults($clone);
+
+            return $done;
+        }else {
+            return null;
+        }
     }
 
     /**
@@ -446,45 +495,26 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Get current connection name
-     * @return string Connection name
-     * @throws \Exception
+     * @return string
      */
     protected function getCurrentConnectionName()
     {
-        try {
-            return $this->Connection->getCurrentConnectionName();
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
-        }
-    }
-
-    /**
-     * Get all connection string.
-     * @return array Return all configs defined
-     * @throws \Exception
-     */
-    protected function getConfigs()
-    {
-        try {
-            return $this->Connection->getConfigs();
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
-        }
+        return $this->Connection->getCurrentConnectionString();
     }
 
     /**
      * Define the current connection on name
      * @param $connectionName This is connection name
      * @return $this This from other implementations
-     * @throws \Exception
      */
     protected function setConnection($connectionName)
     {
         try {
             $this->Connection->setConnection($connectionName);
+
             return $this;
         } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
+            throw new $e;
         }
     }
 
@@ -549,7 +579,7 @@ abstract class Model extends Query implements \JsonSerializable
 
         try {
             self::$_instance->verifyConnection();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
 
@@ -652,13 +682,25 @@ abstract class Model extends Query implements \JsonSerializable
 
         self::$_instance = new $calledClass();
 
-        self::$_instance->Connection = ConnectionManager::initialize()->current();
-
         return self::$_instance;
     }
 
     final private function verifyConnection()
     {
         if (is_null($this->Connection->getCurrentConnectionString())) throw new \Exception('Not set connection.');
+    }
+
+    protected function setTableName($tableName)
+    {
+        self::$table_name = $tableName;
+
+        return $this;
+    }
+
+    protected function setPrimaryKey($primaryKey = 'id')
+    {
+        self::$primary_key = $primaryKey;
+
+        return $this;
     }
 }

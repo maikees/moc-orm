@@ -72,6 +72,7 @@ class ConnectionManager
         $configs = $instance->Config->getConnection($connectionName);
 
         $instance->Connection = new Connection($configs);
+        $instance->Connection->setAppLogger($instance->Config->getAppLogger());
 
         $instance->connections[$connectionName] = $instance->Connection->setConnection();
 
@@ -100,10 +101,10 @@ class ConnectionManager
             $default = $this->Config->getDefault();
 
             $name = is_null($default) ?
-                @end(array_keys($configs)) :
-                $this->Config->getDefault();
+                @end(array_keys($configs ?: [])) :
+                $default;
 
-            self::open($name);
+            $this->open($name);
         }
 
         return $this->currentConnection;
