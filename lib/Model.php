@@ -13,12 +13,12 @@ abstract class Model extends Query implements \JsonSerializable
     private static $_instance;
 
     /**
-     * @var Connection $Connection Save connection instance
+     * @var \MocOrm\Connection\Connection $Connection Save connection instance
      */
     private $Connection;
 
     /**
-     *  @var array $_data Save data on object
+     *  @var array|boolean $_data Save data on object
      */
     private $_data = [];
 
@@ -28,12 +28,12 @@ abstract class Model extends Query implements \JsonSerializable
     private $_newData = [];
 
     /**
-     *  @var closure $triggerAfter Actived trigger after
+     *  @var \Closure $triggerAfter Actived trigger after
      */
     private $triggerAfter = null;
 
     /**
-     *  @var closure $triggerBefore Actived trigger after
+     *  @var \Closure $triggerBefore Actived trigger after
      */
     private $triggerBefore = null;
 
@@ -50,6 +50,8 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Model constructor.
      * set connection in var and set this instance in var for interator
+     * @param null $object
+     * @throws \Exception
      */
     public function __construct($object = null)
     {
@@ -57,12 +59,12 @@ abstract class Model extends Query implements \JsonSerializable
 
         try {
             $this->Connection = ConnectionManager::initialize()->current();
-            self::$_instance = $this;
+            $this->_instance = $this;
 
             $this->cleanNewData();
 
             if (in_array('onLoad', $methods)) {
-                $this->onLoad();
+                $this->/** @scrutinizer ignore-call */onLoad();
             }
 
             if (!is_null($object)) {
@@ -96,7 +98,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Get value on array data
      * @param String $name
-     * @return Value result
+     * @return \MocOrm\Model\Error|mixed
      */
     public function __get($name)
     {
@@ -129,13 +131,13 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * @param $name
      */
-    function __unset($name)
+    public function __unset($name)
     {
         unset($this->_data[$name]);
         unset($this->_newData[$name]);
     }
 
-    function __clone()
+    public function __clone()
     {
         unset($this->_data[static::$primary_key]);
         $this->_newData = $this->_data;
@@ -323,8 +325,8 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Get all data on database needed table name in Model
-     * @return array all data in format Object
      * @throws \Exception Don't set table name in model.
+     * @return Model|array all data in format Object
      */
     public static function all()
     {
@@ -349,7 +351,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Execute one procedure
-     * @param $procedureName Name of the procedure
+     * @param string $procedureName Name of the procedure
      * @param array $param Parameters needed in procedure
      * @return mixed Result on procedure
      * @throws \Exception Case procedureName don't is string or param not is array
@@ -401,7 +403,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Insert the new data in database static mode.
      * @param array $attributes Parameters, this is a mirror on database.
-     * @return bool|Model|Save False if not save in databse, and this instance if save.
+     * @return bool|Model False if not save in databse, and this instance if save.
      * @throws \Exception If the parameters isn't one array.
      */
     public static function create($attributes = [])
@@ -418,7 +420,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Find the data on primary key
-     * @param Array or Integer $parameters Value on primary key
+     * @param Array|Integer $parameters Value on primary key
      * @return mixed Data or false
      * @throws \Exception if Parameter is invalid
      */
@@ -471,7 +473,7 @@ abstract class Model extends Query implements \JsonSerializable
     /**
      * Init the get data dynamic, the last method to use this is done() for execute
      * @param String $colunm This is all colunm from select
-     * @return Model|Save A model if success and false if don't have success
+     * @return Model|boolean A model if success and false if don't have success
      * @throws \Exception If colunm isn't String
      */
     final public static function select($colunm = '*')
@@ -504,8 +506,8 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Define the current connection on name
-     * @param $connectionName This is connection name
-     * @return $this This from other implementations
+     * @param Model $connectionName This is connection name
+     * @return Model This from other implementations
      */
     protected function setConnection($connectionName)
     {
@@ -520,8 +522,8 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Execute the query
-     * @param $query The query for execute
-     * @return $objects Results on query executed
+     * @param String $query The query for execute
+     * @return Model|boolean $objects Results on query executed
      */
     protected function query($query, $param = [])
     {
@@ -570,8 +572,8 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Execute the query on static method
-     * @param $query The query for execute
-     * @return $objects Results on query executed
+     * @param String $query The query for execute
+     * @return array $objects Results on query executed
      */
     public static function sql($query, $param = [])
     {
@@ -607,7 +609,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Get all execute query from ORM
-     * @return all query executed
+     * @return array all query executed
      */
     final protected function getAllPerfomedQuery()
     {
@@ -622,7 +624,7 @@ abstract class Model extends Query implements \JsonSerializable
      */
     final protected function setTriggerAfter($closure = null)
     {
-        if (!is_callable($closure)) throw new Exception('The parameter don\'t is an closure.');
+        if (!is_callable($closure)) throw new \Exception('The parameter don\'t is an closure.');
 
         $this->triggerAfter = $closure;
 
@@ -646,7 +648,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Change schema on postgres
-     * @param $schema schema name
+     * @param String $schema schema name
      * @return $this
      */
     final protected function changeSchema($schema)
@@ -674,7 +676,7 @@ abstract class Model extends Query implements \JsonSerializable
 
     /**
      * Auxiliar method for current instance is set
-     * @return current class
+     * @return $this current class
      */
     final private static function instance()
     {
@@ -685,11 +687,18 @@ abstract class Model extends Query implements \JsonSerializable
         return self::$_instance;
     }
 
+    /**
+     * @throws \Exception if connection doesn't exists.
+     */
     final private function verifyConnection()
     {
         if (is_null($this->Connection->getCurrentConnectionString())) throw new \Exception('Not set connection.');
     }
 
+    /**
+     * @param String $tableName
+     * @return $this
+     */
     protected function setTableName($tableName)
     {
         self::$table_name = $tableName;
@@ -697,6 +706,10 @@ abstract class Model extends Query implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * @param string $primaryKey
+     * @return $this
+     */
     protected function setPrimaryKey($primaryKey = 'id')
     {
         self::$primary_key = $primaryKey;
