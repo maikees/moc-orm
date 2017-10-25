@@ -53,15 +53,16 @@ try {
          * @return Connection
          */
 
-        $config->addConfig(
-            'mysql',
-            'user',
-            'pass',
-            'host',
-            'database',
-            'name',
-            'port',
-            'char');
+        $config->setDriver('ConnectionName','pgsql');
+        $config->setSettings('ConnectionName', [
+            'host' => '192.168.0.4',
+            'database' => 'postgres',
+            'port' => '5432'
+        ]);
+        $config->setUsername('ConnectionName','db_admin');
+        $config->setPassword('ConnectionName','prUc389');
+        $config->setCharset('ConnectionName', 'utf8');
+        $config->setSchema('ConnectionName','local_controlook');
     });
 
     /**
@@ -78,9 +79,7 @@ try {
      * 5. Set values in attributes
      */
 
-    $usage->id2 = 10;
     $usage->nome = 'Teste Save';
-//    $usage->nome23 = 'Teste Save2';
     $result = $usage->save();
     var_dump($result);
     /**
