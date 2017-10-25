@@ -21,7 +21,7 @@ abstract class Query
 
     /**
      * This function is a closed on 'SELECT' and execute all parameter
-     * @return $objects Return all data on parameters before sending
+     * @return array $objects Return all data on parameters before sending
      */
     public function done()
     {
@@ -41,8 +41,8 @@ abstract class Query
 
     /**
      * This function is a mirror of 'where' on database
-     * @param null $parameter The colunm for compare
-     * @param null $value Value to compare
+     * @param string|null $parameter The colunm for compare
+     * @param string|null $value Value to compare
      * @return $this This object for others interation
      * @throws \Exception Case types on parameter is invalid or not set.
      */
@@ -59,8 +59,8 @@ abstract class Query
 
     /**
      * This function is a mirror of 'AND' on database
-     * @param null $parameter The colunm for compare
-     * @param null $value Value to compare
+     * @param string|null $parameter The colunm for compare
+     * @param string|null $value Value to compare
      * @return $this This object for others interation
      * @throws \Exception Case types on parameter is invalid or not set.
      */
@@ -77,8 +77,8 @@ abstract class Query
 
     /**
      * This function is a mirror of 'OR' on database
-     * @param null $parameter The colunm for compare
-     * @param null $value Value to compare
+     * @param string|null $parameter The colunm for compare
+     * @param string|null $value Value to compare
      * @return $this This object for others interation
      * @throws \Exception Case types on parameter is invalid or not set.
      */
@@ -95,8 +95,8 @@ abstract class Query
 
     /**
      * This function is a mirror of 'Order By' on database
-     * @param null $parameter The colunm for compare
-     * @param null $value Value to compare
+     * @param string|null $parameter The colunm for compare
+     * @param string|null $value Value to compare
      * @return $this This object for others interation
      * @throws \Exception Case types on parameter is invalid or not set.
      */
@@ -172,7 +172,7 @@ abstract class Query
 
     /**
      * This function is a mirror of 'Group By' on database
-     * @param $colunm
+     * @param string $colunm
      * @return $this
      * @throws \Exception
      */

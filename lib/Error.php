@@ -25,9 +25,11 @@ class Error
 
         if ($instance->burst) $instance->burst($message, $code, $type);
 
-        $errors['message'] = $message;
-        $errors['code'] = $code;
-        $errors['type'] = $type;
+        $errors = [
+            'message' => $message,
+            'code' => $code,
+            'type' => $type
+        ];
 
         $instance->errors[] = $errors;
 

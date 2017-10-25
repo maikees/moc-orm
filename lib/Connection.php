@@ -2,20 +2,17 @@
 
 namespace MocOrm\Connection;
 
-
-use phpDocumentor\Reflection\Types\Boolean;
-
 class Connection
 {
     /**
      * This instance object
-     * @var Connection.
+     * @var Connection \Connection
      */
     private static $_instance;
 
     /**
      * This is instance current connect object connected
-     * @var PDO
+     * @var \PDO $_connection
      */
     private $_connection;
 
@@ -92,31 +89,6 @@ class Connection
         return $this->_currentConnectionString;
     }
 
-    /**
-     * Initialize the connection
-     * @return $this
-     * @throws \Exception
-     */
-    public function connection($connectionString, $username, $password)
-    {
-        if (is_null($this->getCurrentConnectionName())) throw new \Exception('Conexão não setada.');
-
-        try {
-            $connectionName = $this->getCurrentConnectionName();
-
-            $this->_connection = new \PDO(
-                $this->_connectionString[$connectionName],
-                $this->_username[$connectionName],
-                $this->_password[$connectionName]
-            );
-
-        } catch (\Exception $e) {
-            throw new \Exception($e->getMessage(), $e->getCode());
-        }
-
-        return $this;
-    }
-
     public function getConnection()
     {
         return $this->_connection;
@@ -131,7 +103,7 @@ class Connection
     }
 
     /**
-     * @return query
+     * @return String query
      */
     public function getLastPerformedQuery()
     {
@@ -146,6 +118,7 @@ class Connection
     public function setPerformedQuery(String $query, String $time)
     {
         $this->performed_query[] = ['query' => $query, 'time' => $time];
+
         return $this;
     }
 
@@ -197,7 +170,7 @@ class Connection
 
     /**
      * Change schema on postgres
-     * @param $schema schema name
+     * @param String $schema schema name
      * @return $this
      */
     final public function changeSchema($schema = null)

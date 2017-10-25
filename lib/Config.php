@@ -2,8 +2,6 @@
 
 namespace MocOrm\Connection;
 
-use Mockery\Exception;
-
 class Config
 {
     /**
@@ -29,7 +27,7 @@ class Config
 
     /**
      * List of drivers sets on connections
-     * @var $_driver
+     * @var array $_driver
      */
     private $_charset = [];
 
@@ -134,7 +132,7 @@ class Config
     /**
      * Set the current connection on connection name.
      * @param string $connectionName name on connection
-     * @return $this This object from other interator
+     * @return $this|array This object from other interator
      * @throws \Exception if the connect name haven't set;
      */
     public function getConnection($connectionName)

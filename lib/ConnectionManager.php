@@ -5,19 +5,9 @@ namespace MocOrm\Connection;
 class ConnectionManager
 {
     /**
-     * @Connection object is a of Connection
-     */
-    private $Connection;
-
-    /**
      * @Connection array is all connections opened
      */
     private $connections = [];
-
-    /**
-     * @currentConnection object is the current connection
-     */
-    private $currentConnection;
 
     /**
      * @_instance object this instance
