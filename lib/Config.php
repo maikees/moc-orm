@@ -2,6 +2,8 @@
 
 namespace MocOrm\Connection;
 
+use Mockery\Exception;
+
 class Config
 {
     /**
@@ -21,7 +23,7 @@ class Config
 
     /**
      * List of drivers sets on connections
-     * @var $_driver
+     * @var array $_driver
      */
     private $_driver = [];
 
@@ -32,13 +34,14 @@ class Config
     private $_charset = [];
 
     /**
-     * List of drivers sets on connections
-     * @var $_driver
+     * List of schemas sets on connections
+     * @var array $_schema
      */
     private $_schema = [];
 
     /**
      * Constant to define set accepted drivers.
+     * @var array DRIVERS all accepted drivers
      */
     const DRIVERS = [
         "mysql",
@@ -46,6 +49,11 @@ class Config
     ];
 
     private $default = null;
+
+    /**
+     * @var boolean $appLogger Configure if application save log or no
+     */
+    private $appLogger;
 
     /**
      * Create configuration from connection
@@ -60,15 +68,15 @@ class Config
      * @throws \Exception case one or some elements on parameters are invalid
      */
     public function addConfig(
-                                $driver = 'mysql',
-                                $username = "root",
-                                $password = null,
-                                $host = "localhost",
-                                $database = null,
-                                $connectionName = null,
-                                $port = null,
-                                $charset = 'utf8',
-                                $defaultSchema = null)
+        $driver = 'mysql',
+        $username = "root",
+        $password = null,
+        $host = "localhost",
+        $database = null,
+        $connectionName = null,
+        $port = null,
+        $charset = 'utf8',
+        $defaultSchema = null)
     {
         #Begin: Verify if all parameters send is valid.
         if (!is_string($driver) || !in_array($driver, self::DRIVERS)) throw new \Exception("The driver $driver don't supported.");
@@ -153,5 +161,155 @@ class Config
         if (!is_string($connectionName) || empty($connectionName)) {
             throw new \Exception("Invalid connection name.");
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getConnectionString($connectionName)
+    {
+        return $this->_connectionString[$connectionName];
+    }
+
+    /**
+     * @param mixed $connectionString
+     */
+    public function setSettings($connectionName, $connectionSettings)
+    {
+        if (!is_array($connectionSettings)) throw new \Exception('Invalid format connectionSettings');
+        if (empty($this->_driver[$connectionName])) throw new \Exception('Driver not set.');
+
+        $this->validatesConnectionName($connectionName);
+
+        $connectionSettings = (object)$connectionSettings;
+
+        $this->_connectionString[$connectionName] = $this->_driver[$connectionName].":host=$connectionSettings->host;dbname=$connectionSettings->database;port=$connectionSettings->port;";
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getUsername($connectionName)
+    {
+        return $this->_username[$connectionName];
+    }
+
+    /**
+     * @param mixed $username
+     */
+    public function setUsername($connectionName, $username = "root")
+    {
+        $this->validatesConnectionName($connectionName);
+
+        $this->_username[$connectionName] = $username;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPassword($connectionName)
+    {
+        return $this->_password[$connectionName];
+    }
+
+    /**
+     * @param mixed $password
+     */
+    public function setPassword($connectionName, $password)
+    {
+        $this->validatesConnectionName($connectionName);
+
+        $this->_password[$connectionName] = $password;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getDriver($connectionName)
+    {
+        return $this->_driver[$connectionName];
+    }
+
+    /**
+     * @param mixed $driver
+     */
+    public function setDriver($connectionName, $driver = 'mysql')
+    {
+        $this->validatesConnectionName($connectionName);
+
+        $this->_driver[$connectionName] = $driver;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCharset($connectionName)
+    {
+        return $this->_charset[$connectionName];
+    }
+
+    /**
+     * @param mixed $charset
+     */
+    public function setCharset($connectionName, $charset = 'utf8')
+    {
+        $this->validatesConnectionName($connectionName);
+
+        $this->_charset[$connectionName] = $charset;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSchema($connectionName)
+    {
+        return $this->_schema[$connectionName];
+    }
+
+    /**
+     * @param mixed $schema
+     */
+    public function setSchema($connectionName, $schema)
+    {
+        $this->validatesConnectionName($connectionName);
+
+        $this->_schema[$connectionName] = $schema;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function appEnableLogger() {
+        $this->appLogger = true;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function appDisableLogger() {
+        $this->appLogger = false;
+
+        return $this;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getAppLogger() {
+        return $this->appLogger;
     }
 }

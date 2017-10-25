@@ -44,7 +44,7 @@ try {
      * @return Connection
      */
 
-    $connectionManager = ConnectionManager::initialize(function ($connection) {
+    $connectionManager = ConnectionManager::initialize(function ($config) {
         /**
          * Add the configurations using the method addConfig, accepts various configurations
          *      Arguments:
@@ -53,7 +53,7 @@ try {
          * @return Connection
          */
 
-        $connection->addConfig(
+        $config->addConfig(
             'mysql',
             'user',
             'pass',

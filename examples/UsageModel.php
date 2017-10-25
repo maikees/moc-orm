@@ -3,7 +3,8 @@
 
 namespace MocOrm\Usage;
 
-use MocOrm\Model\Model;
+use MocOrm\Support\Model;
+
 
 /**
  *  1. Extends your model to class Model, using namespace orm\model\Model
