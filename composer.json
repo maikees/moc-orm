@@ -1,5 +1,5 @@
 {
-  "name": "moc-solucoes/moc-orm",
+  "name": "mocsolucoes/moc-orm",
   "type": "library",
   "description": "Orm for PHP >= 5.3.",
   "keywords": [
