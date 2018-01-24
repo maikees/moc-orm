@@ -35,28 +35,20 @@ class Transaction
      */
     public function __construct($closure = null)
     {
-        if (!is_callable($closure)) {
-            throw new \Exception("Transaction must have a callable as parameter.");
-
-        } else {
+        if (is_callable($closure)) {
             $connection = $this->getConnection();
-
             try {
                 $connection->beginTransaction();
-
                 $this->results = $closure($connection);
-
                 if ($this->results === false) {
                     $connection->rollbackTransaction();
                 } else {
                     $connection->commitTransaction();
                 }
-
             } catch (\Exception $e) {
                 $connection->rollbackTransaction();
                 $this->error = $e;
             }
-
         }
         return $this;
     }
