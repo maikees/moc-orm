@@ -43,6 +43,7 @@ class Config
      */
     const DRIVERS = [
         "mysql",
+        "mssql",
         "pgsql",
     ];
 
@@ -86,8 +87,9 @@ class Config
 
         $port = is_null($port) ? '' : (int)$port;
         if (!is_null($port) && !is_int($port)) throw new \Exception("Invalid port format.");
+
         #Constructor of the connection string
-        $this->_connectionString[$connectionName] = "$driver:host=$host;dbname=$database;port=$port;";
+        $this->_connectionString[$connectionName] = $this->renderConnectionString($driver, $host, $database, $port);
         $this->_username[$connectionName] = $username;
         $this->_password[$connectionName] = $password;
         $this->_driver[$connectionName] = $driver;
@@ -95,6 +97,13 @@ class Config
         $this->_schema[$connectionName] = $defaultSchema;
 
         return $this;
+    }
+
+    final private function renderConnectionString($drive, $host, $database, $port) {
+        switch ($drive) {
+            case "mssql": return "sqlsrv:Server=$host, $port;Database=$database;";
+            default: return "$drive:host=$host;dbname=$database;port=$port;";
+        }
     }
 
     /**
@@ -146,7 +155,8 @@ class Config
                 'username' => $this->_username[$connectionName],
                 'password' => $this->_password[$connectionName],
                 'charset' => $this->_charset[$connectionName],
-                'schema' => $this->_schema[$connectionName]];
+                'schema' => $this->_schema[$connectionName]
+            ];
         } else {
             throw new \Exception("The connection name $connectionName is not set.");
         }
@@ -181,7 +191,7 @@ class Config
 
         $connectionSettings = (object)$connectionSettings;
 
-        $this->_connectionString[$connectionName] = $this->_driver[$connectionName].":host=$connectionSettings->host;dbname=$connectionSettings->database;port=$connectionSettings->port;";
+        $this->_connectionString[$connectionName] = $this->_driver[$connectionName] . ":host=$connectionSettings->host;dbname=$connectionSettings->database;port=$connectionSettings->port;";
 
         return $this;
     }
@@ -289,7 +299,8 @@ class Config
     /**
      * @return $this
      */
-    public function appEnableLogger() {
+    public function appEnableLogger()
+    {
         $this->appLogger = true;
 
         return $this;
@@ -298,7 +309,8 @@ class Config
     /**
      * @return $this
      */
-    public function appDisableLogger() {
+    public function appDisableLogger()
+    {
         $this->appLogger = false;
 
         return $this;
@@ -307,7 +319,8 @@ class Config
     /**
      * @return boolean
      */
-    public function getAppLogger() {
+    public function getAppLogger()
+    {
         return $this->appLogger;
     }
 }

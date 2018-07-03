@@ -186,7 +186,7 @@ class Connection
      * @param bool $logger
      * @return Connection
      */
-    final public function setAppLogger($logger): Connection {
+    final public function setAppLogger($logger) {
         $this->options['appLogger'] = $logger;
 
         return $this;
