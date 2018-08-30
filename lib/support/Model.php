@@ -3,7 +3,8 @@
 namespace MocOrm\Support;
 
 /**
- * Model
+ * Class Model
+ * @package MocOrm\Support
  */
 abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
 {
@@ -18,6 +19,23 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
     }
 
     /**
+     * Return count of data
+     * @return int
+     */
+    public function Count()
+    {
+        return count($this->getData());
+    }
+
+    /**
+     * Get first model from query result.
+     * @return mixed
+     */
+    public function end() {
+        return end($this->getData());
+    }
+
+    /**
      * Gets model data through static method.
      *
      * @param  mixed $data
@@ -27,7 +45,9 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
     {
         if (!($data instanceof self)) throw new \Exception(" It's not a model.");
 
-        $data = array_map(function ($object) { return $object->toArray(); }, $data);
+        $data = array_map(function ($object) {
+            return $object->toArray();
+        }, $data);
 
         return $data;
     }
@@ -52,6 +72,10 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
         return isset($data[$offset]);
     }
 
+    /**
+     * @param mixed $offset
+     * @return mixed|null
+     */
     public function offsetGet($offset)
     {
         $data = $this->getData();
@@ -59,6 +83,10 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
         return isset($data[$offset]) ? $data[$offset] : null;
     }
 
+    /**
+     * @param mixed $offset
+     * @param mixed $value
+     */
     public function offsetSet($offset, $value)
     {
         $data = $this->getData();
@@ -70,6 +98,9 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
         }
     }
 
+    /**
+     * @param mixed $offset
+     */
     public function offsetUnset($offset)
     {
         $data = $this->getData();

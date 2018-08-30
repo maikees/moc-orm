@@ -89,9 +89,20 @@ class Connection
         return $this->_currentConnectionString;
     }
 
+    /**
+     * Get PDO of current connection
+     * @return \PDO
+     */
     public function getConnection()
     {
         return $this->_connection;
+    }
+
+    /**
+     * Close current connection
+     */
+    public function closeConnection() {
+        $this->_connection = null;
     }
 
     /**
@@ -191,7 +202,6 @@ class Connection
 
         return $this;
     }
-
 
     final public function getAppLogger() {
         return $this->options['appLogger'];
