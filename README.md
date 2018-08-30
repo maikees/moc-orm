@@ -10,6 +10,7 @@
 MOC ORM is a fast object-relational mapper (ORM) for PHP.
 
 That works with:
+* SQL Server
 * Postgress
 * Mysql
 
