@@ -22,7 +22,7 @@ abstract class Model extends \MocOrm\Model\Model implements \ArrayAccess
      * Return count of data
      * @return int
      */
-    public function Count()
+    public function count()
     {
         return count($this->getData());
     }
